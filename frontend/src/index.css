@@ -1,0 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --primary: #00FF94;
+  --bg-dark: #0A0A0A;
+  --card-bg: #1A1A1A;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-dark);
+  color: #ffffff;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Outfit', sans-serif;
+}
+
+/* Glassmorphism Utilities */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  @apply rounded-xl p-6 transition-all duration-300;
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.btn-primary {
+  box-shadow: 0 0 20px rgba(0, 255, 148, 0.3);
+  @apply bg-green-500 hover:bg-green-400 text-black font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105 active:scale-95;
+}
+
+.btn-secondary {
+  @apply bg-gray-800 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition-all border border-gray-700;
+}
+
+/* Animation Utilities */
+@keyframes glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(0, 255, 148, 0.2);
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(0, 255, 148, 0.5);
+  }
+}
+
+.animate-glow {
+  animation: glow 2s infinite;
+}

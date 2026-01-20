@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+.npm/
+dist/
+build/
+
+# Python Virtual Environments
+.env/
+venv/
+env/
+__pycache__/
+*.pyc
+
+# Environment Variables
+.env
+.env.local
+
+# IDEs and Tools
+.vscode/
+.idea/
+.DS_Store
+*.log
+
+# Project specific
+backend/model/
+frontend/.env

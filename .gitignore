@@ -25,3 +25,6 @@ __pycache__/
 # Project specific
 backend/model/
 frontend/.env
+
+# Docs
+docs/

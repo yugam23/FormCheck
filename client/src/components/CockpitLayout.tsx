@@ -3,6 +3,7 @@ import { ReadyState } from 'react-use-websocket';
 import clsx from 'clsx';
 import { Sidebar } from './Sidebar';
 import { VideoFeed } from './VideoFeed';
+import { OverlayCanvas } from './OverlayCanvas';
 
 export function CockpitLayout() {
   const { readyState, lastMessage } = useSocketStore();
@@ -10,6 +11,7 @@ export function CockpitLayout() {
   // Parse last message
   let reps = 0;
   let feedback = "READY";
+  let landmarks = null;
   
   if (lastMessage) {
       try {
@@ -17,6 +19,7 @@ export function CockpitLayout() {
           if (data.type === "RESULT") {
               reps = data.reps || 0;
               feedback = data.feedback || "READY";
+              landmarks = data.landmarks || null;
           }
       } catch (e) {
           // ignore
@@ -39,6 +42,7 @@ export function CockpitLayout() {
         {/* Video Canvas Container */}
         <div className="w-full max-w-5xl aspect-video bg-base border border-border rounded-lg relative overflow-hidden shadow-2xl shadow-black/50">
            <VideoFeed />
+           <OverlayCanvas landmarks={landmarks} />
            
            {/* Feedback Toast */}
            <div className="absolute top-6 left-1/2 -translate-x-1/2">

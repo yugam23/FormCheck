@@ -4,9 +4,9 @@ import useWebSocket, { ReadyState } from 'react-use-websocket';
 
 
 
-const VIDEO_WIDTH = 640;
-const VIDEO_HEIGHT = 480;
-const FRAME_RATE = 15; // Target FPS
+const VIDEO_WIDTH = 480; // Reduced from 640 for speed
+const VIDEO_HEIGHT = 360; // Reduced from 480
+const FRAME_RATE = 12; // Cap at 12 FPS for stability
 
 export function VideoFeed() {
   const webcamRef = useRef<Webcam>(null);

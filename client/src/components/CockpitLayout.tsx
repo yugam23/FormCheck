@@ -1,10 +1,27 @@
 import { useSocketStore } from '../store/socketStore';
 import { ReadyState } from 'react-use-websocket';
+import clsx from 'clsx';
 import { Sidebar } from './Sidebar';
 import { VideoFeed } from './VideoFeed';
 
 export function CockpitLayout() {
-  const { readyState } = useSocketStore();
+  const { readyState, lastMessage } = useSocketStore();
+  
+  // Parse last message
+  let reps = 0;
+  let feedback = "READY";
+  
+  if (lastMessage) {
+      try {
+          const data = JSON.parse(lastMessage);
+          if (data.type === "RESULT") {
+              reps = data.reps || 0;
+              feedback = data.feedback || "READY";
+          }
+      } catch (e) {
+          // ignore
+      }
+  }
 
   const connectionStatus = {
     [ReadyState.CONNECTING]: { text: 'CONNECTING', color: 'bg-yellow-500', textCol: 'text-yellow-400' },
@@ -23,10 +40,22 @@ export function CockpitLayout() {
         <div className="w-full max-w-5xl aspect-video bg-base border border-border rounded-lg relative overflow-hidden shadow-2xl shadow-black/50">
            <VideoFeed />
            
+           {/* Feedback Toast */}
+           <div className="absolute top-6 left-1/2 -translate-x-1/2">
+               <div className={clsx(
+                   "px-6 py-3 rounded-full backdrop-blur-md border",
+                   feedback === "GOOD DEPTH! PUSH UP" ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-400" :
+                   feedback === "READY" ? "bg-base/50 border-gray-700 text-gray-400" :
+                   "bg-alert/20 border-alert/50 text-alert"
+               )}>
+                   <span className="font-mono font-bold tracking-wider">{feedback}</span>
+               </div>
+           </div>
+
            {/* Overlay Elements (Mock) */}
            <div className="absolute top-6 right-6 flex flex-col items-end pointer-events-none">
                <span className="text-gray-500 font-mono text-xs uppercase tracking-widest">Reps</span>
-               <span className="text-6xl font-mono text-primary font-bold tabular-nums">00</span>
+               <span className="text-6xl font-mono text-primary font-bold tabular-nums">{String(reps).padStart(2, '0')}</span>
            </div>
 
         </div>

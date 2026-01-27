@@ -19,6 +19,8 @@ function App() {
   useEffect(() => {
     if (lastMessage !== null) {
       setLastMessage(lastMessage.data);
+      // Rough latency estimation: update "pong" time whenever we get a message
+      useSocketStore.getState().updatePong();
     }
   }, [lastMessage, setLastMessage]);
 

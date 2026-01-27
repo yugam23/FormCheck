@@ -1,6 +1,11 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+import json
+from pose_detector import PoseDetector
+from rep_counter import RepCounter
 
 app = FastAPI()
+detector = PoseDetector()
+counter = RepCounter()
 
 
 @app.get("/health")
@@ -14,11 +19,35 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_text()
-            # In a real scenario we parse the json:
-            # message = json.loads(data)
-            # frame_data = message.get("payload")
+            try:
+                message = json.loads(data)
+                if message.get("type") == "FRAME":
+                    payload = message.get("payload")
+                    timestamp = message.get("timestamp")
 
-            # Simple confirmation including data length
-            await websocket.send_text(f"Processed frame: {len(data)} bytes")
+                    # Run inference
+                    pose_result = detector.process_frame(payload)
+
+                    if pose_result and pose_result.landmarks:
+                        # Process Logic
+                        logic_result = counter.process(pose_result.landmarks)
+
+                        response = {
+                            "type": "RESULT",
+                            "timestamp": timestamp,
+                            "landmarks": [lm.dict() for lm in pose_result.landmarks],
+                            "reps": logic_result["reps"],
+                            "feedback": logic_result["feedback"],
+                            "state": logic_result["state"],
+                        }
+                    else:
+                        response = {"type": "NO_DETECTION"}
+
+                    await websocket.send_text(json.dumps(response))
+            except json.JSONDecodeError:
+                pass
+            except Exception as e:
+                print(f"Error handling frame: {e}")
+
     except WebSocketDisconnect:
         print("Client disconnected")

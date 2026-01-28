@@ -1,72 +1,94 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --primary: #00FF94;
-  --bg-dark: #0A0A0A;
-  --card-bg: #1A1A1A;
+@layer base {
+  :root {
+    /* Dark Theme Default (Premium Glass) */
+    --background: 240 10% 3.9%; /* #09090b - Zinc 950 base */
+    --foreground: 0 0% 98%; /* #fafafa */
+
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 142.1 76.2% 36.3%; /* #16a34a - Green 600 */
+    --primary-foreground: 355.7 100% 97.3%;
+
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 142.1 76.2% 36.3%;
+
+    --radius: 0.75rem;
+  }
 }
 
 @layer base {
-  body {
-    margin: 0;
-    font-family: 'Inter', sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    background-color: var(--bg-dark);
-    color: #ffffff;
+  * {
+    @apply border-border;
   }
-
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Outfit', sans-serif;
+  body {
+    @apply bg-background text-foreground antialiased selection:bg-primary/30;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display tracking-tight;
   }
 }
 
 @layer components {
-  /* Glassmorphism Utilities */
-  .glass {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+  .glass-panel {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl;
   }
 
   .glass-card {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    @apply rounded-xl p-6 transition-all duration-300;
-  }
-
-  .glass-card:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
+    @apply bg-zinc-900/50 backdrop-blur-md border border-white/5 hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-primary/10 hover:-translate-y-1;
   }
 
   .btn-primary {
-    box-shadow: 0 0 20px rgba(0, 255, 148, 0.3);
-    @apply bg-green-500 hover:bg-green-400 text-black font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105 active:scale-95;
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(22,163,74,0.3)] hover:shadow-[0_0_30px_rgba(22,163,74,0.5)] transition-all duration-300 font-medium px-6 py-3 rounded-lg active:scale-95;
   }
 
   .btn-secondary {
-    @apply bg-gray-800 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition-all border border-gray-700;
-  }
-}
-
-@layer utilities {
-  /* Animation Utilities */
-  @keyframes glow {
-    0%, 100% {
-      box-shadow: 0 0 10px rgba(0, 255, 148, 0.2);
-    }
-    50% {
-      box-shadow: 0 0 20px rgba(0, 255, 148, 0.5);
-    }
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-white/10 hover:border-white/20 transition-all duration-300 font-medium px-6 py-3 rounded-lg active:scale-95;
   }
 
-  .animate-glow {
-    animation: glow 2s infinite;
+  /* Mesh Gradient Utilities */
+  .bg-mesh {
+    background-color: #000000;
+    background-image:
+      radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
+      radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 1) 0, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
+  }
+
+  .bg-grid-white {
+    background-size: 40px 40px;
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
   }
 }

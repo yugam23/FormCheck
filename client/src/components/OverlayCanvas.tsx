@@ -47,6 +47,8 @@ export function OverlayCanvas({ landmarks, width = 640, height = 480 }: OverlayC
     ctx.lineWidth = 3;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = '#10B981'; // Default glow
 
     // Draw Connections
     ctx.strokeStyle = '#10B981'; // Primary Green
@@ -65,8 +67,10 @@ export function OverlayCanvas({ landmarks, width = 640, height = 480 }: OverlayC
     });
 
     // Draw Keypoints
+    ctx.shadowBlur = 0; // Reset shadow for clean dots
     ctx.fillStyle = '#0F172A'; // Surface color for center
-    ctx.strokeStyle = '#fff'; 
+    ctx.strokeStyle = '#ffffff'; 
+    ctx.lineWidth = 2;
     
     landmarks.forEach((lm) => {
         if (lm.visibility > 0.5) {

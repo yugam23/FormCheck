@@ -3,7 +3,17 @@ import json
 from pose_detector import PoseDetector
 from rep_counter import RepCounter
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 detector = PoseDetector()
 counter = RepCounter()
 

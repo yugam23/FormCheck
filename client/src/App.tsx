@@ -1,18 +1,22 @@
 
+import { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import MainLayout from './components/MainLayout';
-import HomeView from './components/HomeView';
-import WorkoutView from './components/WorkoutView';
-import Dashboard from './components/Dashboard';
+import MainLayout from '@/components/MainLayout';
+import LoadingFallback from '@/components/LoadingFallback';
+
+// Lazy load pages for better initial bundle size
+const HomeView = lazy(() => import('@/components/HomeView'));
+const WorkoutView = lazy(() => import('@/components/WorkoutView'));
+const Dashboard = lazy(() => import('@/components/Dashboard'));
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route element={<MainLayout />}>
-          <Route path="/" element={<HomeView />} />
-          <Route path="/workout" element={<WorkoutView />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/" element={<Suspense fallback={<LoadingFallback />}><HomeView /></Suspense>} />
+          <Route path="/workout" element={<Suspense fallback={<LoadingFallback />}><WorkoutView /></Suspense>} />
+          <Route path="/dashboard" element={<Suspense fallback={<LoadingFallback />}><Dashboard /></Suspense>} />
         </Route>
       </Routes>
     </BrowserRouter>

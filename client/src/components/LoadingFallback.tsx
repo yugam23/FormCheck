@@ -1,0 +1,24 @@
+import { Activity } from 'lucide-react';
+
+const LoadingFallback = () => {
+    return (
+        <div className="flex items-center justify-center min-h-[50vh] w-full">
+            <div className="relative flex flex-col items-center gap-4">
+                {/* Glowing Background */}
+                <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse-slow"></div>
+                
+                {/* Icon with Ring */}
+                <div className="relative z-10 p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl">
+                    <Activity className="w-10 h-10 text-primary animate-pulse" />
+                </div>
+                
+                {/* Loading Text */}
+                <span className="text-sm font-medium text-muted-foreground tracking-widest uppercase animate-pulse">
+                    Loading...
+                </span>
+            </div>
+        </div>
+    );
+};
+
+export default LoadingFallback;

@@ -1,21 +1,6 @@
 
 import { useRef, useEffect } from 'react';
-
-interface Landmark {
-    x: number;
-    y: number;
-    z: number;
-    visibility: number;
-}
-
-interface PoseData {
-    landmarks: Landmark[];
-    feedback?: {
-        color: 'red' | 'green';
-        message: string;
-        angle?: number;
-    };
-}
+import type { PoseData } from '../types';
 
 interface SkeletonOverlayProps {
     poseData: PoseData | null;
@@ -23,17 +8,16 @@ interface SkeletonOverlayProps {
     height: number;
 }
 
+const CONNECTIONS = [
+    [11, 12], [11, 13], [13, 15], [12, 14], [14, 16], // Upper body
+    [11, 23], [12, 24], // Torso
+    [23, 24], // Hips
+    [23, 25], [24, 26], [25, 27], [26, 28], // Legs
+    [27, 29], [28, 30], [29, 31], [30, 32]  // Feet
+];
+
 const SkeletonOverlay = ({ poseData, width, height }: SkeletonOverlayProps) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-
-    // MediaPipe Pose Landmark Connections
-    const CONNECTIONS = [
-        [11, 12], [11, 13], [13, 15], [12, 14], [14, 16], // Upper body
-        [11, 23], [12, 24], // Torso
-        [23, 24], // Hips
-        [23, 25], [24, 26], [25, 27], [26, 28], // Legs
-        [27, 29], [28, 30], [29, 31], [30, 32]  // Feet
-    ];
 
     useEffect(() => {
         const canvas = canvasRef.current;

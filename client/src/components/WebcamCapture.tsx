@@ -3,11 +3,12 @@ import { useRef, useEffect, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import SkeletonOverlay from './SkeletonOverlay';
 import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
+import type { PoseData } from '../types';
 
 interface WebcamCaptureProps {
     onConnectionStatus?: (status: string) => void;
-    onPoseDataUpdate?: (data: any) => void;
-    poseData: any; 
+    onPoseDataUpdate?: (data: PoseData) => void;
+    poseData: PoseData | null; 
 }
 
 const VIDEO_WIDTH = 640;

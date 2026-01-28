@@ -21,7 +21,7 @@ export function CockpitLayout() {
               feedback = data.feedback || "READY";
               landmarks = data.landmarks || null;
           }
-      } catch (e) {
+      } catch {
           // ignore
       }
   }

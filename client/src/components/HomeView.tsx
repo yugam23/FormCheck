@@ -37,7 +37,7 @@ const HomeView = () => {
                         Start Training
                         <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
                     </button>
-                    <button className="px-8 py-3 rounded-lg font-medium text-white hover:bg-white/5 border border-transparent hover:border-white/10 transition-all">
+                    <button className="glass-button">
                         View Demo
                     </button>
                 </div>
@@ -74,9 +74,11 @@ const HomeView = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto px-4">
                     {/* Pushup Card */}
-                    <div
-                        className="group relative h-96 rounded-3xl overflow-hidden cursor-pointer border border-white/5 bg-zinc-900 shadow-2xl transition-all duration-500 hover:shadow-primary/20 hover:scale-[1.01]"
+                    <button
+                        type="button"
+                        className="group relative h-96 w-full text-left rounded-3xl overflow-hidden cursor-pointer border border-white/5 bg-zinc-900 shadow-2xl transition-all duration-500 hover:shadow-primary/20 hover:scale-[1.01] focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                         onClick={() => startWorkout('Pushups')}
+                        aria-label="Start Pushups Workout"
                     >
                         {/* Background Image / Gradient */}
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-zinc-800 via-zinc-950 to-black opacity-80 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -107,12 +109,14 @@ const HomeView = () => {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </button>
 
                     {/* Squat Card */}
-                    <div
-                        className="group relative h-96 rounded-3xl overflow-hidden cursor-pointer border border-white/5 bg-zinc-900 shadow-2xl transition-all duration-500 hover:shadow-blue-500/20 hover:scale-[1.01]"
+                    <button
+                        type="button"
+                        className="group relative h-96 w-full text-left rounded-3xl overflow-hidden cursor-pointer border border-white/5 bg-zinc-900 shadow-2xl transition-all duration-500 hover:shadow-blue-500/20 hover:scale-[1.01] focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                         onClick={() => startWorkout('Squats')}
+                        aria-label="Start Squats Workout"
                     >
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-zinc-800 via-zinc-950 to-black opacity-80 group-hover:opacity-100 transition-opacity duration-500"></div>
                         <div className="absolute inset-0 bg-grid-white/[0.02] bg-[length:32px_32px]"></div>
@@ -141,7 +145,7 @@ const HomeView = () => {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </button>
                 </div>
             </section>
         </div>

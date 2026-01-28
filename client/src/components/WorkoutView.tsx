@@ -5,6 +5,7 @@ import { ChevronLeft, LogOut } from 'lucide-react';
 import WebcamCapture from './WebcamCapture';
 import StatsPanel from './StatsPanel';
 import { cn } from '../lib/utils';
+import type { PoseData } from '../types';
 
 const WorkoutView = () => {
     const location = useLocation();
@@ -12,12 +13,12 @@ const WorkoutView = () => {
     const activeExercise = location.state?.exercise || 'Unknown Exercise';
     
     const [connectionStatus, setConnectionStatus] = useState('Connecting');
-    const [poseData, setPoseData] = useState<any>(null);
+    const [poseData, setPoseData] = useState<PoseData | null>(null);
     const [sessionTime, setSessionTime] = useState(0);
     const [timerActive, setTimerActive] = useState(true);
 
     useEffect(() => {
-        let interval: any;
+        let interval: ReturnType<typeof setInterval>;
         if (timerActive) {
             interval = setInterval(() => setSessionTime(t => t + 1), 1000);
         }

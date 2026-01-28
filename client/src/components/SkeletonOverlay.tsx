@@ -48,7 +48,7 @@ const SkeletonOverlay = ({ poseData, width, height }: SkeletonOverlayProps) => {
 
         const landmarks = poseData.landmarks;
         const feedback = poseData.feedback;
-        const color = feedback?.color === 'red' ? '#FF4545' : '#00FF94'; // Red or Green
+        const color = feedback?.color === 'red' ? '#EF4444' : '#10B981'; // Tailwind Red-500 or Primary (Emerald)
 
         // Helper to get coordinates
         const getCoord = (index: number) => {
@@ -57,16 +57,17 @@ const SkeletonOverlay = ({ poseData, width, height }: SkeletonOverlayProps) => {
             return { x: lm.x * width, y: lm.y * height };
         };
 
-        // Draw Connections
-        ctx.lineWidth = 4;
+        // Draw Connections (Neon Glow Effect)
+        ctx.lineWidth = 3;
         ctx.strokeStyle = color;
         ctx.lineCap = 'round';
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = color;
 
         CONNECTIONS.forEach(([startIdx, endIdx]) => {
             const start = getCoord(startIdx);
             const end = getCoord(endIdx);
 
-            // Check visibility threshold if needed, but MediaPipe usually handles it well
             if (landmarks[startIdx].visibility > 0.5 && landmarks[endIdx].visibility > 0.5) {
                 ctx.beginPath();
                 ctx.moveTo(start.x, start.y);
@@ -77,12 +78,13 @@ const SkeletonOverlay = ({ poseData, width, height }: SkeletonOverlayProps) => {
 
         // Draw Landmarks
         ctx.fillStyle = '#FFFFFF';
+        ctx.shadowBlur = 0; // Reset shadow for joints
         landmarks.forEach((lm) => {
             if (lm.visibility > 0.5) {
                 const x = lm.x * width;
                 const y = lm.y * height;
                 ctx.beginPath();
-                ctx.arc(x, y, 6, 0, 2 * Math.PI);
+                ctx.arc(x, y, 4, 0, 2 * Math.PI);
                 ctx.fill();
             }
         });

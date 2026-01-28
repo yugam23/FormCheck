@@ -1,9 +1,10 @@
 
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, LogOut } from 'lucide-react';
 import WebcamCapture from './WebcamCapture';
 import StatsPanel from './StatsPanel';
+import { cn } from '../lib/utils';
 
 const WorkoutView = () => {
     const location = useLocation();
@@ -29,44 +30,75 @@ const WorkoutView = () => {
     };
 
     return (
-        <div className="animate-in fade-in zoom-in-95 duration-500 max-w-5xl mx-auto">
-            <div className="flex items-center space-x-4 mb-6">
-                <button
-                    onClick={endWorkout}
-                    className="p-2 hover:bg-white/10 rounded-full transition-colors"
-                >
-                    <ChevronLeft size={24} />
-                </button>
-                <h2 className="text-2xl font-bold">{activeExercise} Session</h2>
-                <div className="ml-auto flex items-center space-x-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-gray-400">
-                    <div className={`w-2 h-2 rounded-full ${connectionStatus === 'Open' ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
-                    <span>WS: {connectionStatus}</span>
+        <div className="max-w-7xl mx-auto animate-fade-in space-y-8">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                    <button
+                        onClick={endWorkout}
+                        className="p-2 hover:bg-white/10 rounded-full transition-colors text-muted-foreground hover:text-white"
+                    >
+                        <ChevronLeft size={24} />
+                    </button>
+                    <div>
+                        <h2 className="text-3xl font-display font-bold text-white">{activeExercise}</h2>
+                        <div className="flex items-center space-x-2 text-xs font-mono text-muted-foreground mt-1">
+                            <span>LIVE SESSION</span>
+                            <span className="text-primary">•</span>
+                            <span>AI ANALYZER ACTIVE</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex items-center space-x-4">
+                     <div className={cn(
+                        "px-3 py-1.5 rounded-full border flex items-center space-x-2 text-xs font-mono",
+                        connectionStatus === 'Open' ? "bg-green-500/10 border-green-500/20 text-green-400" : "bg-red-500/10 border-red-500/20 text-red-400"
+                     )}>
+                        <div className={cn("w-2 h-2 rounded-full", connectionStatus === 'Open' ? "bg-green-500 animate-pulse" : "bg-red-500")}></div>
+                        <span>STATUS: {connectionStatus.toUpperCase()}</span>
+                    </div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2">
-                    <WebcamCapture
-                        onConnectionStatus={setConnectionStatus}
-                        onPoseDataUpdate={setPoseData}
-                    />
+            {/* Main Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-[calc(100vh-200px)] min-h-[600px]">
+                {/* Visualizer Feed */}
+                <div className="lg:col-span-9 relative">
+                    <div className="h-full w-full rounded-2xl overflow-hidden glass-panel border-white/10 bg-black/40 shadow-2xl relative group">
+                        {/* Corner decorative elements */}
+                        <div className="absolute top-4 left-4 w-8 h-8 border-t-2 border-l-2 border-primary/50 rounded-tl-lg z-20"></div>
+                        <div className="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-primary/50 rounded-tr-lg z-20"></div>
+                        <div className="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-l-2 border-primary/50 rounded-bl-lg z-20"></div>
+                        <div className="absolute bottom-4 right-4 w-8 h-8 border-b-2 border-r-2 border-primary/50 rounded-br-lg z-20"></div>
+                        
+                        <div className="absolute inset-0 flex items-center justify-center p-1">
+                             <WebcamCapture
+                                onConnectionStatus={setConnectionStatus}
+                                onPoseDataUpdate={setPoseData}
+                                poseData={poseData}
+                            />
+                        </div>
+                    </div>
                 </div>
 
-                <div className="lg:col-span-1">
-                    <StatsPanel
-                        repData={poseData?.reps ? { rep_count: poseData.reps, form_quality_score: 85 } : undefined} // Mock score if missing
-                        feedback={poseData?.feedback}
-                        sessionTime={sessionTime}
-                    />
-
-                    <div className="mt-6 flex justify-center">
-                        <button
-                            onClick={endWorkout}
-                            className="w-full btn-secondary text-red-400 border-red-500/30 hover:bg-red-500/10"
-                        >
-                            End Session
-                        </button>
+                {/* Control Deck */}
+                <div className="lg:col-span-3 flex flex-col justify-between h-full space-y-6">
+                    <div className="flex-1 overflow-y-auto custom-scrollbar pr-2">
+                        <StatsPanel
+                            repData={poseData?.reps ? { rep_count: poseData.reps, form_quality_score: 85 } : undefined} // Mock score if missing
+                            feedback={poseData?.feedback}
+                            sessionTime={sessionTime}
+                        />
                     </div>
+
+                    <button
+                        onClick={endWorkout}
+                        className="w-full btn-secondary bg-red-500/5 hover:bg-red-500/20 border-red-500/20 hover:border-red-500/50 text-red-400 hover:text-red-300 flex items-center justify-center space-x-2 py-4"
+                    >
+                        <LogOut size={18} />
+                        <span>End Session</span>
+                    </button>
                 </div>
             </div>
         </div>

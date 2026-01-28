@@ -1,21 +1,22 @@
 
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import SkeletonOverlay from './SkeletonOverlay';
+import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface WebcamCaptureProps {
     onConnectionStatus?: (status: string) => void;
     onPoseDataUpdate?: (data: any) => void;
+    poseData: any; 
 }
 
 const VIDEO_WIDTH = 640;
 const VIDEO_HEIGHT = 480;
 const FRAME_RATE = 15;
 
-const WebcamCapture = ({ onConnectionStatus, onPoseDataUpdate }: WebcamCaptureProps) => {
+const WebcamCapture = ({ onConnectionStatus, onPoseDataUpdate, poseData }: WebcamCaptureProps) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [poseData, setPoseData] = useState<any>(null);
     const [isCameraReady, setIsCameraReady] = useState(false);
     const [fps, setFps] = useState(0);
 
@@ -24,6 +25,8 @@ const WebcamCapture = ({ onConnectionStatus, onPoseDataUpdate }: WebcamCapturePr
     const { sendMessage, lastMessage, readyState } = useWebSocket('ws://localhost:8000/ws', { 
         share: true,
         shouldReconnect: () => true,
+        reconnectAttempts: 10,
+        reconnectInterval: (attemptNumber) => Math.min(Math.pow(2, attemptNumber) * 1000, 10000), // Exponential backoff
     });
 
     const connectionStatus = {
@@ -50,13 +53,13 @@ const WebcamCapture = ({ onConnectionStatus, onPoseDataUpdate }: WebcamCapturePr
                 // or { type: "NO_DETECTION" }
                 
                 if (data.type === 'RESULT') {
-                    setPoseData(data);
+                    // Update parent ONLY
                     if (onPoseDataUpdate) {
                         onPoseDataUpdate(data);
                     }
                 } else if (data.type === 'NO_DETECTION') {
-                    // Start clearing pose data if needed, or keep last frame
-                    // setPoseData(null); 
+                     // Optionally notify parent of no detection to clear skeletons?
+                     // For now we keep the last valid frame or let parent handle timeout
                 }
             } catch (e) {
                 console.error("Error parsing WS message", e);
@@ -89,7 +92,6 @@ const WebcamCapture = ({ onConnectionStatus, onPoseDataUpdate }: WebcamCapturePr
     }, []);
 
     // Frame processing loop
-    // Adapted to use existing server protocol: { type: 'FRAME', payload: base64, timestamp: ... }
     useEffect(() => {
         if (!isCameraReady || readyState !== ReadyState.OPEN) return;
 
@@ -111,7 +113,7 @@ const WebcamCapture = ({ onConnectionStatus, onPoseDataUpdate }: WebcamCapturePr
                         // Draw video to invisible canvas to get data
                         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-                        // Compress quality to reduce WS load (JPEG 0.5)
+                        // Compress quality to reduce WS load (JPEG 0.6)
                         const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
                         const base64 = dataUrl.split(',')[1];
 
@@ -133,13 +135,11 @@ const WebcamCapture = ({ onConnectionStatus, onPoseDataUpdate }: WebcamCapturePr
     }, [isCameraReady, readyState, sendMessage]);
 
     return (
-        <div className="relative w-full max-w-2xl mx-auto rounded-xl overflow-hidden shadow-2xl bg-black border border-gray-800">
+        <div className="relative w-full h-full flex items-center justify-center bg-black rounded-xl overflow-hidden">
             {/* Video Feed */}
             <video
                 ref={videoRef}
-                className="w-full h-auto object-cover transform scale-x-[-1]" // Mirror effect
-                width={VIDEO_WIDTH}
-                height={VIDEO_HEIGHT}
+                className="w-full h-full object-contain transform scale-x-[-1]" // Mirror effect, object-contain to preserve aspect ratio
                 playsInline
                 muted
             />
@@ -154,23 +154,34 @@ const WebcamCapture = ({ onConnectionStatus, onPoseDataUpdate }: WebcamCapturePr
 
             {/* Skeleton Overlay */}
             {poseData && (
-                <div className="absolute inset-0 pointer-events-none transform scale-x-[-1]">
-                    <SkeletonOverlay poseData={poseData} width={VIDEO_WIDTH} height={VIDEO_HEIGHT} />
+                <div className="absolute inset-0 pointer-events-none transform scale-x-[-1] flex items-center justify-center">
+                    {/* Container to match video aspect ratio if possible, but absolute overlay works for now */}
+                     <div className="relative" style={{ width: '100%', height: '100%', maxHeight: '100%' }}>
+                         {/* We need to make sure the overlay matches the video dimensions exactly if object-contain crops/pads */}
+                         {/* For simplicity we assume video fills or we use absolute positioning on a wrapper that has expected aspect ratio */}
+                         <SkeletonOverlay poseData={poseData} width={VIDEO_WIDTH} height={VIDEO_HEIGHT} />
+                     </div>
                 </div>
             )}
 
             {/* Feedback Text Overlay - Not Mirrored */}
             {poseData?.feedback && (
-                <div className="absolute top-8 left-0 w-full text-center pointer-events-none z-10 flex flex-col items-center justify-center">
-                    <h2
-                        className="text-4xl font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] transition-all duration-300"
-                        style={{ color: poseData.feedback.color === 'red' ? '#EF4444' : '#4ADE80' }}
-                    >
-                        {poseData.feedback.message}
-                    </h2>
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none z-10 flex flex-col items-center justify-center">
+                    {poseData.feedback.message && (
+                        <h2
+                            className="text-5xl font-display font-black tracking-tighter drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] transition-all duration-300"
+                            style={{ 
+                                color: poseData.feedback.color === 'red' ? '#EF4444' : '#10B981',
+                                WebkitTextStroke: '2px black'
+                            }}
+                        >
+                            {poseData.feedback.message}
+                        </h2>
+                    )}
+                    
                     {poseData.feedback.angle !== undefined && (
-                        <div className="bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full mt-2 border border-white/10">
-                            <p className="text-lg text-white font-mono">
+                        <div className="bg-black/50 backdrop-blur-md px-4 py-2 rounded-full mt-4 border border-white/20">
+                            <p className="text-2xl text-white font-mono font-bold">
                                 {Math.round(poseData.feedback.angle)}°
                             </p>
                         </div>
@@ -179,24 +190,37 @@ const WebcamCapture = ({ onConnectionStatus, onPoseDataUpdate }: WebcamCapturePr
             )}
 
             {/* Stats Overlay */}
-            <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md p-3 rounded-lg text-white border border-white/10">
-                <div className="text-xs text-gray-400">FPS</div>
-                <div className="font-mono text-lg font-bold text-green-400">{fps > 0 ? fps : '--'}</div>
+            <div className="absolute top-4 right-4 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-lg text-white border border-white/5 flex items-center space-x-2">
+                <div className="text-[10px] text-muted-foreground uppercase tracking-widest">FPS</div>
+                <div className="font-mono text-sm font-bold text-primary">{fps > 0 ? fps : '--'}</div>
             </div>
 
+            {/* Connection Status Overlay */}
             {connectionStatus !== 'Open' && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-50">
-                    <div className="text-white text-center p-4">
-                        {connectionStatus === 'Error' || connectionStatus === 'Closed' ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
+                    <div className="glass-panel p-8 rounded-2xl text-center max-w-sm">
+                        {connectionStatus === 'Closed' || connectionStatus === 'Uninstantiated' ? (
                             <>
-                                <div className="text-red-500 text-3xl mb-2">⚠</div>
-                                <p className="text-lg font-bold text-red-500 mb-1">Connection Failed</p>
-                                <p className="text-sm text-gray-400">Please make sure the backend server is running.</p>
+                                <div className="mx-auto w-12 h-12 bg-red-500/20 text-red-500 rounded-full flex items-center justify-center mb-4">
+                                    <AlertTriangle size={24} />
+                                </div>
+                                <h3 className="text-xl font-bold text-white mb-2">Connection Lost</h3>
+                                <p className="text-sm text-gray-400 mb-6">Unable to connect to the AI server. Please ensure the backend is running.</p>
+                                <button 
+                                    onClick={() => window.location.reload()} 
+                                    className="btn-secondary w-full flex items-center justify-center"
+                                >
+                                    <RefreshCw size={16} className="mr-2" />
+                                    Retry Connection
+                                </button>
                             </>
                         ) : (
                             <>
-                                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto mb-2"></div>
-                                <p className="text-sm font-medium">Connecting to AI Server...</p>
+                                <div className="mx-auto w-12 h-12 flex items-center justify-center mb-4">
+                                    <Loader2 size={32} className="text-primary animate-spin" />
+                                </div>
+                                <h3 className="text-lg font-bold text-white mb-1">Connecting...</h3>
+                                <p className="text-sm text-gray-500">Establishing secure link to neural engine</p>
                             </>
                         )}
                     </div>

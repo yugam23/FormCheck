@@ -1,91 +1,183 @@
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
-import { Calendar, TrendingUp, Award } from 'lucide-react';
+import { ReferenceLine, XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area, CartesianGrid } from 'recharts';
+import { Calendar, TrendingUp, Trophy, ArrowUpRight, Activity, Clock } from 'lucide-react';
+import { cn } from '../lib/utils';
 
-const mockData = [
-    { name: 'Set 1', score: 85 },
-    { name: 'Set 2', score: 88 },
-    { name: 'Set 3', score: 92 },
-    { name: 'Set 4', score: 90 },
-    { name: 'Set 5', score: 95 },
+const mockDailyProgress = [
+    { day: 'Mon', score: 65 },
+    { day: 'Tue', score: 72 },
+    { day: 'Wed', score: 68 },
+    { day: 'Thu', score: 85 },
+    { day: 'Fri', score: 82 },
+    { day: 'Sat', score: 90 },
+    { day: 'Sun', score: 94 },
+];
+
+const mockRecentSets = [
+    { id: 1, exercise: 'Pushups', reps: 15, score: 92, time: '2 mins ago' },
+    { id: 2, exercise: 'Pushups', reps: 12, score: 88, time: '5 mins ago' },
+    { id: 3, exercise: 'Squats', reps: 20, score: 95, time: '1 hour ago' },
 ];
 
 const Dashboard = () => {
     return (
-        <div className="w-full max-w-4xl mx-auto p-6 space-y-8">
-            <header className="flex justify-between items-end mb-8">
+        <div className="space-y-8 animate-fade-in pb-12">
+            <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold text-white mb-2">Your Progress</h2>
-                    <p className="text-gray-400">Analysis of your recent workout performance</p>
+                    <h2 className="text-4xl font-display font-bold text-white mb-2">Dashboard</h2>
+                    <p className="text-muted-foreground">Welcome back, Athlete. Here is your performance overview.</p>
                 </div>
-                <button className="btn-secondary">Export Data</button>
+                <div className="flex gap-3">
+                    <button className="btn-secondary text-sm py-2">History</button>
+                    <button className="btn-primary text-sm py-2 flex items-center shadow-primary/20">
+                        <ArrowUpRight size={16} className="mr-2" />
+                        Export Data
+                    </button>
+                </div>
             </header>
 
-            {/* Stats Summary Row */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="glass-card">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="p-3 bg-green-500/20 rounded-lg text-green-400">
+            {/* Bento Grid Layout */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                
+                {/* Main Stat: Form Score */}
+                <div className="md:col-span-2 glass-panel p-6 rounded-2xl relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-32 bg-primary/10 rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                    <div className="flex justify-between items-start mb-6">
+                        <div>
+                            <p className="text-muted-foreground font-medium text-sm uppercase tracking-wider">Average Form Score</p>
+                            <h3 className="text-5xl font-display font-bold text-white mt-1">92.5</h3>
+                        </div>
+                        <div className="p-3 bg-primary/20 text-primary rounded-xl">
                             <TrendingUp size={24} />
                         </div>
-                        <span className="text-green-400 text-sm font-bold">+12%</span>
                     </div>
-                    <h3 className="text-gray-400 text-sm font-medium">Average Form Score</h3>
-                    <p className="text-3xl font-bold text-white mt-1">92.5</p>
+                    <div className="flex items-center space-x-2">
+                        <span className="px-2 py-1 rounded-md bg-green-500/20 text-green-400 text-xs font-bold flex items-center">
+                            <ArrowUpRight size={12} className="mr-1" />
+                            +12%
+                        </span>
+                        <span className="text-xs text-muted-foreground">vs. last week</span>
+                    </div>
                 </div>
 
-                <div className="glass-card">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="p-3 bg-blue-500/20 rounded-lg text-blue-400">
+                {/* Stat: Workout Count */}
+                <div className="glass-panel p-6 rounded-2xl flex flex-col justify-between hover:bg-white/5 transition-colors">
+                    <div className="flex justify-between items-start">
+                        <div className="p-3 bg-blue-500/20 text-blue-400 rounded-xl">
                             <Calendar size={24} />
                         </div>
-                        <span className="text-gray-500 text-sm">Last 7 days</span>
+                        <span className="text-xs text-muted-foreground">Last 7 days</span>
                     </div>
-                    <h3 className="text-gray-400 text-sm font-medium">Total Workouts</h3>
-                    <p className="text-3xl font-bold text-white mt-1">14</p>
+                    <div>
+                        <h3 className="text-3xl font-display font-bold text-white">14</h3>
+                        <p className="text-sm text-muted-foreground mt-1">Total Sessions</p>
+                    </div>
                 </div>
 
-                <div className="glass-card">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="p-3 bg-purple-500/20 rounded-lg text-purple-400">
-                            <Award size={24} />
+                 {/* Stat: Streak */}
+                 <div className="glass-panel p-6 rounded-2xl flex flex-col justify-between hover:bg-white/5 transition-colors">
+                    <div className="flex justify-between items-start">
+                        <div className="p-3 bg-amber-500/20 text-amber-400 rounded-xl">
+                            <Trophy size={24} />
                         </div>
-                        <span className="text-purple-400 text-sm font-bold">Level 5</span>
+                        <span className="text-xs text-amber-500/80 font-bold uppercase">Level 5</span>
                     </div>
-                    <h3 className="text-gray-400 text-sm font-medium">Streak</h3>
-                    <p className="text-3xl font-bold text-white mt-1">5 Days</p>
+                    <div>
+                        <h3 className="text-3xl font-display font-bold text-white">5</h3>
+                        <p className="text-sm text-muted-foreground mt-1">Day Streak</p>
+                    </div>
                 </div>
-            </div>
 
-            {/* Main Chart */}
-            <div className="glass-card p-6">
-                <h3 className="text-xl font-bold text-white mb-6">Form Quality Trend</h3>
-                <div className="h-80 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={mockData}>
-                            <defs>
-                                <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#00FF94" stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor="#00FF94" stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                            <XAxis dataKey="name" stroke="#666" />
-                            <YAxis stroke="#666" domain={[0, 100]} />
-                            <Tooltip
-                                contentStyle={{ backgroundColor: '#1A1A1A', border: '1px solid #333', borderRadius: '8px' }}
-                                itemStyle={{ color: '#00FF94' }}
-                            />
-                            <Area
-                                type="monotone"
-                                dataKey="score"
-                                stroke="#00FF94"
-                                strokeWidth={3}
-                                fillOpacity={1}
-                                fill="url(#colorScore)"
-                            />
-                        </AreaChart>
-                    </ResponsiveContainer>
+                {/* Chart Section */}
+                <div className="md:col-span-3 glass-panel p-6 rounded-2xl min-h-[400px]">
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="font-bold text-lg flex items-center">
+                            <Activity size={20} className="mr-2 text-primary" />
+                            Form Consistency
+                        </h3>
+                        <div className="flex gap-2">
+                            {['1W', '1M', '3M', 'YTD'].map((p) => (
+                                <button key={p} className={cn(
+                                    "px-3 py-1 rounded-lg text-xs font-medium transition-colors",
+                                    p === '1W' ? "bg-white/10 text-white" : "text-muted-foreground hover:bg-white/5"
+                                )}>{p}</button>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="h-[320px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={mockDailyProgress}>
+                                <defs>
+                                    <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                                <XAxis 
+                                    dataKey="day" 
+                                    stroke="rgba(255,255,255,0.3)" 
+                                    fontSize={12} 
+                                    tickLine={false} 
+                                    axisLine={false}
+                                />
+                                <YAxis 
+                                    stroke="rgba(255,255,255,0.3)" 
+                                    fontSize={12} 
+                                    tickLine={false} 
+                                    axisLine={false}
+                                    domain={[0, 100]}
+                                />
+                                <Tooltip
+                                    contentStyle={{ 
+                                        backgroundColor: '#09090b', 
+                                        border: '1px solid rgba(255,255,255,0.1)', 
+                                        borderRadius: '12px',
+                                        boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+                                    }}
+                                    itemStyle={{ color: '#fff' }}
+                                    cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 2 }}
+                                />
+                                <ReferenceLine y={90} stroke="rgba(16, 185, 129, 0.5)" strokeDasharray="3 3" label={{ value: 'Target', position: 'insideTopRight', fill: '#10b981', fontSize: 10 }} />
+                                <Area
+                                    type="monotone"
+                                    dataKey="score"
+                                    stroke="hsl(var(--primary))"
+                                    strokeWidth={3}
+                                    fillOpacity={1}
+                                    fill="url(#colorScore)"
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                {/* Recent Activity Feed */}
+                <div className="md:col-span-1 glass-panel p-6 rounded-2xl flex flex-col">
+                    <h3 className="font-bold text-lg mb-4 flex items-center">
+                        <Clock size={20} className="mr-2 text-muted-foreground" />
+                        Recent Sets
+                    </h3>
+                    <div className="space-y-4 overflow-y-auto pr-2 custom-scrollbar flex-1">
+                        {mockRecentSets.map((set) => (
+                            <div key={set.id} className="p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group">
+                                <div className="flex justify-between items-start mb-1">
+                                    <span className="font-semibold text-sm group-hover:text-primary transition-colors">{set.exercise}</span>
+                                    <span className={cn(
+                                        "text-xs font-bold px-1.5 py-0.5 rounded",
+                                        set.score >= 90 ? "text-green-400 bg-green-400/10" : "text-amber-400 bg-amber-400/10"
+                                    )}>{set.score}</span>
+                                </div>
+                                <div className="flex justify-between text-xs text-muted-foreground">
+                                    <span>{set.reps} Reps</span>
+                                    <span>{set.time}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <button className="w-full mt-4 text-xs font-medium text-center text-muted-foreground hover:text-white transition-colors">
+                        View All History
+                    </button>
                 </div>
             </div>
         </div>

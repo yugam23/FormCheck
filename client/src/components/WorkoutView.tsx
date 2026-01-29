@@ -16,7 +16,8 @@ const WorkoutView = () => {
     const [connectionStatus, setConnectionStatus] = useState('Connecting');
     const [poseData, setPoseData] = useState<PoseData | null>(null);
     const [sessionTime, setSessionTime] = useState(0);
-    const [timerActive, setTimerActive] = useState(true);
+    const [timerActive, setTimerActive] = useState(false);
+    const [isSessionActive, setIsSessionActive] = useState(false);
 
     const { speak } = useVoiceFeedback();
     const prevRepsRef = useRef(0);
@@ -42,14 +43,23 @@ const WorkoutView = () => {
 
     useEffect(() => {
         let interval: ReturnType<typeof setInterval>;
-        if (timerActive) {
+        if (isSessionActive && timerActive) {
             interval = setInterval(() => setSessionTime(t => t + 1), 1000);
         }
         return () => clearInterval(interval);
-    }, [timerActive]);
+    }, [isSessionActive, timerActive]);
+
+    const startWorkout = () => {
+        setIsSessionActive(true);
+        setTimerActive(true);
+        setSessionTime(0);
+        speak("Session started", true);
+    };
 
     const endWorkout = () => {
+        setIsSessionActive(false);
         setTimerActive(false);
+        speak("Session ended", true);
         navigate('/dashboard');
     };
 
@@ -59,7 +69,7 @@ const WorkoutView = () => {
             <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                     <button
-                        onClick={endWorkout}
+                        onClick={() => navigate('/dashboard')}
                         className="p-2 hover:bg-white/10 rounded-full transition-colors text-muted-foreground hover:text-white"
                     >
                         <ChevronLeft size={24} />
@@ -69,7 +79,7 @@ const WorkoutView = () => {
                         <div className="flex items-center space-x-2 text-xs font-mono text-muted-foreground mt-1">
                             <span>LIVE SESSION</span>
                             <span className="text-primary">•</span>
-                            <span>AI ANALYZER ACTIVE</span>
+                            <span>{isSessionActive ? "AI ANALYZER ACTIVE" : "READY TO START"}</span>
                         </div>
                     </div>
                 </div>
@@ -102,6 +112,7 @@ const WorkoutView = () => {
                                 onConnectionStatus={setConnectionStatus}
                                 onPoseDataUpdate={setPoseData}
                                 poseData={poseData}
+                                sessionActive={isSessionActive}
                             />
                         </div>
                     </div>
@@ -117,13 +128,22 @@ const WorkoutView = () => {
                         />
                     </div>
 
-                    <button
-                        onClick={endWorkout}
-                        className="w-full btn-secondary bg-red-500/5 hover:bg-red-500/20 border-red-500/20 hover:border-red-500/50 text-red-400 hover:text-red-300 flex items-center justify-center space-x-2 py-4"
-                    >
-                        <LogOut size={18} />
-                        <span>End Session</span>
-                    </button>
+                    {!isSessionActive ? (
+                        <button
+                            onClick={startWorkout}
+                            className="w-full btn-primary bg-green-500 hover:bg-green-400 text-black flex items-center justify-center space-x-2 py-4 shadow-glow-primary"
+                        >
+                            <span className="font-bold">START SESSION</span>
+                        </button>
+                    ) : (
+                        <button
+                            onClick={endWorkout}
+                            className="w-full btn-secondary bg-red-500/5 hover:bg-red-500/20 border-red-500/20 hover:border-red-500/50 text-red-400 hover:text-red-300 flex items-center justify-center space-x-2 py-4"
+                        >
+                            <LogOut size={18} />
+                            <span>End Session</span>
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

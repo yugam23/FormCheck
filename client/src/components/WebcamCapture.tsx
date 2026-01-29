@@ -8,15 +8,16 @@ import type { PoseData } from '../types';
 interface WebcamCaptureProps {
     activeExercise?: string;
     onConnectionStatus?: (status: string) => void;
-    onPoseDataUpdate?: (data: PoseData) => void;
-    poseData: PoseData | null; 
+    onPoseDataUpdate?: (data: PoseData | null) => void;
+    poseData: PoseData | null;
+    sessionActive?: boolean;
 }
 
 const VIDEO_WIDTH = 640;
 const VIDEO_HEIGHT = 480;
 const FRAME_RATE = 15;
 
-const WebcamCapture = ({ activeExercise = 'Pushups', onConnectionStatus, onPoseDataUpdate, poseData }: WebcamCaptureProps) => {
+const WebcamCapture = ({ activeExercise = 'Pushups', onConnectionStatus, onPoseDataUpdate, poseData, sessionActive = false }: WebcamCaptureProps) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [isCameraReady, setIsCameraReady] = useState(false);
@@ -36,9 +37,6 @@ const WebcamCapture = ({ activeExercise = 'Pushups', onConnectionStatus, onPoseD
                 exercise: activeExercise
             };
             console.log("Sending INIT:", initMsg);
-            // We use the sendMessage from the hook, but we need to make sure we do it here or inside a useEffect
-            // onOpen callback might not have access to latest state if not careful, but usually safe.
-            // Better to use useEffect on readyState change.
         }
     });
 
@@ -49,6 +47,17 @@ const WebcamCapture = ({ activeExercise = 'Pushups', onConnectionStatus, onPoseD
         [ReadyState.CLOSED]: 'Closed',
         [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
     }[readyState];
+
+    // Reset session when sessionActive triggers
+    useEffect(() => {
+        if (sessionActive && readyState === ReadyState.OPEN) {
+            console.log("Session Started: Sending INIT reset");
+            sendMessage(JSON.stringify({
+                type: 'INIT',
+                exercise: activeExercise
+            }));
+        }
+    }, [sessionActive, readyState, activeExercise, sendMessage]);
 
     // Listen for ReadyState changes to send INIT
     useEffect(() => {
@@ -82,8 +91,10 @@ const WebcamCapture = ({ activeExercise = 'Pushups', onConnectionStatus, onPoseD
                         onPoseDataUpdate(data);
                     }
                 } else if (data.type === 'NO_DETECTION') {
-                     // Optionally notify parent of no detection to clear skeletons?
-                     // For now we keep the last valid frame or let parent handle timeout
+                     // Notify parent of no detection to clear skeletons
+                     if (onPoseDataUpdate) {
+                         onPoseDataUpdate(null);
+                     }
                 }
             } catch (e) {
                 console.error("Error parsing WS message", e);
@@ -93,9 +104,11 @@ const WebcamCapture = ({ activeExercise = 'Pushups', onConnectionStatus, onPoseD
 
     // Setup Camera
     useEffect(() => {
+        let stream: MediaStream | null = null;
+
         const setupCamera = async () => {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({
+                stream = await navigator.mediaDevices.getUserMedia({
                     video: { width: VIDEO_WIDTH, height: VIDEO_HEIGHT, facingMode: 'user' },
                     audio: false,
                 });
@@ -113,6 +126,12 @@ const WebcamCapture = ({ activeExercise = 'Pushups', onConnectionStatus, onPoseD
         };
 
         setupCamera();
+
+        return () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        };
     }, []);
 
     // Frame processing loop
@@ -137,16 +156,19 @@ const WebcamCapture = ({ activeExercise = 'Pushups', onConnectionStatus, onPoseD
                         // Draw video to invisible canvas to get data
                         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-                        // Compress quality to reduce WS load (JPEG 0.6)
-                        const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
-                        const base64 = dataUrl.split(',')[1];
+                        // Only send to backend if session is active
+                        if (sessionActive) {
+                            // Compress quality to reduce WS load (JPEG 0.6)
+                            const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+                            const base64 = dataUrl.split(',')[1];
 
-                        // Send to backend in existing format
-                        sendMessage(JSON.stringify({
-                            type: 'FRAME',
-                            payload: base64,
-                            timestamp: Date.now()
-                        }));
+                            // Send to backend in existing format
+                            sendMessage(JSON.stringify({
+                                type: 'FRAME',
+                                payload: base64,
+                                timestamp: Date.now()
+                            }));
+                        }
                     }
                 }
             }
@@ -156,7 +178,7 @@ const WebcamCapture = ({ activeExercise = 'Pushups', onConnectionStatus, onPoseD
         animationFrameId = requestAnimationFrame(processFrame);
 
         return () => cancelAnimationFrame(animationFrameId);
-    }, [isCameraReady, readyState, sendMessage]);
+    }, [isCameraReady, readyState, sendMessage, sessionActive]);
 
     return (
         <div className="relative w-full h-full flex items-center justify-center bg-black rounded-xl overflow-hidden">

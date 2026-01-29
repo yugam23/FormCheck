@@ -26,7 +26,7 @@ app.add_middleware(
 
 # Global Services
 manager = ConnectionManager()
-detector = PoseDetector()
+# detector = PoseDetector() - Moved to session scope
 
 # Session State: WebSocket -> Dict {"strategy": ExerciseStrategy, "name": str}
 active_sessions: Dict[WebSocket, Dict[str, Any]] = {}
@@ -50,6 +50,7 @@ def get_sessions():
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
+    detector = PoseDetector()
 
     # Initialize default session
     active_sessions[websocket] = {
@@ -116,6 +117,7 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         logger.info("Client disconnected")
         manager.disconnect(websocket)
+        detector.close()
 
         # Save session data
         session = active_sessions.pop(websocket, None)

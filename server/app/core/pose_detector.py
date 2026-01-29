@@ -46,3 +46,6 @@ class PoseDetector:
         except Exception as e:
             print(f"Error processing frame: {e}")
             return None
+
+    def close(self):
+        self.pose.close()

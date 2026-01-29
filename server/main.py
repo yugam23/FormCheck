@@ -47,6 +47,23 @@ def get_sessions():
     return db.get_recent_sessions()
 
 
+from pydantic import BaseModel
+
+
+class SessionCreate(BaseModel):
+    exercise: str
+    reps: int
+    duration: int = 0
+
+
+@app.post("/api/save-session")
+def save_session(session: SessionCreate):
+    """Manually save a completed session"""
+    logger.info(f"Manual save: {session.exercise} - {session.reps} reps")
+    db.save_session(session.exercise, session.reps, session.duration)
+    return {"status": "saved"}
+
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)

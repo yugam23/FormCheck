@@ -45,13 +45,32 @@ class Database:
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-        cursor.execute(
-            "SELECT * FROM sessions ORDER BY timestamp DESC LIMIT ?", (limit,)
-        )
+
+        if limit is None or limit < 0:
+            cursor.execute("SELECT * FROM sessions ORDER BY timestamp DESC")
+        else:
+            cursor.execute(
+                "SELECT * FROM sessions ORDER BY timestamp DESC LIMIT ?", (limit,)
+            )
+
         rows = cursor.fetchall()
         conn.close()
 
         return [dict(row) for row in rows]
+
+    def delete_session(self, session_id: int):
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM sessions WHERE id = ?", (session_id,))
+        conn.commit()
+        conn.close()
+
+    def delete_all_sessions(self):
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM sessions")
+        conn.commit()
+        conn.close()
 
 
 # Global instance

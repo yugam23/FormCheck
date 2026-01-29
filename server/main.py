@@ -42,9 +42,9 @@ def health_check():
 
 
 @app.get("/api/sessions")
-def get_sessions():
+def get_sessions(limit: int = 10):
     """Return recent workout sessions"""
-    return db.get_recent_sessions()
+    return db.get_recent_sessions(limit)
 
 
 from pydantic import BaseModel
@@ -62,6 +62,20 @@ def save_session(session: SessionCreate):
     logger.info(f"Manual save: {session.exercise} - {session.reps} reps")
     db.save_session(session.exercise, session.reps, session.duration)
     return {"status": "saved"}
+
+
+@app.delete("/api/sessions/{session_id}")
+def delete_session(session_id: int):
+    """Delete a specific session"""
+    db.delete_session(session_id)
+    return {"status": "deleted", "id": session_id}
+
+
+@app.delete("/api/sessions")
+def delete_all_sessions():
+    """Delete all sessions"""
+    db.delete_all_sessions()
+    return {"status": "all deleted"}
 
 
 @app.websocket("/ws")

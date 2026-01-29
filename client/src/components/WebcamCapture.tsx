@@ -6,6 +6,7 @@ import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import type { PoseData } from '../types';
 
 interface WebcamCaptureProps {
+    activeExercise?: string;
     onConnectionStatus?: (status: string) => void;
     onPoseDataUpdate?: (data: PoseData) => void;
     poseData: PoseData | null; 
@@ -15,7 +16,7 @@ const VIDEO_WIDTH = 640;
 const VIDEO_HEIGHT = 480;
 const FRAME_RATE = 15;
 
-const WebcamCapture = ({ onConnectionStatus, onPoseDataUpdate, poseData }: WebcamCaptureProps) => {
+const WebcamCapture = ({ activeExercise = 'Pushups', onConnectionStatus, onPoseDataUpdate, poseData }: WebcamCaptureProps) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [isCameraReady, setIsCameraReady] = useState(false);
@@ -28,6 +29,17 @@ const WebcamCapture = ({ onConnectionStatus, onPoseDataUpdate, poseData }: Webca
         shouldReconnect: () => true,
         reconnectAttempts: 10,
         reconnectInterval: (attemptNumber) => Math.min(Math.pow(2, attemptNumber) * 1000, 10000), // Exponential backoff
+        onOpen: () => {
+             // Send Init Message on Connect
+            const initMsg = {
+                type: 'INIT',
+                exercise: activeExercise
+            };
+            console.log("Sending INIT:", initMsg);
+            // We use the sendMessage from the hook, but we need to make sure we do it here or inside a useEffect
+            // onOpen callback might not have access to latest state if not careful, but usually safe.
+            // Better to use useEffect on readyState change.
+        }
     });
 
     const connectionStatus = {
@@ -37,6 +49,17 @@ const WebcamCapture = ({ onConnectionStatus, onPoseDataUpdate, poseData }: Webca
         [ReadyState.CLOSED]: 'Closed',
         [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
     }[readyState];
+
+    // Listen for ReadyState changes to send INIT
+    useEffect(() => {
+        if (readyState === ReadyState.OPEN) {
+             console.log("WS Open, sending INIT for", activeExercise);
+             sendMessage(JSON.stringify({
+                type: 'INIT',
+                exercise: activeExercise
+            }));
+        }
+    }, [readyState, activeExercise, sendMessage]);
 
     // Notify parent of connection status
     useEffect(() => {

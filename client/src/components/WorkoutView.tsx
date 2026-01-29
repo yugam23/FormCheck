@@ -1,7 +1,8 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ChevronLeft, LogOut } from 'lucide-react';
+import { useVoiceFeedback } from '../hooks/useVoiceFeedback';
 import WebcamCapture from './WebcamCapture';
 import StatsPanel from './StatsPanel';
 import { cn } from '../lib/utils';
@@ -16,6 +17,28 @@ const WorkoutView = () => {
     const [poseData, setPoseData] = useState<PoseData | null>(null);
     const [sessionTime, setSessionTime] = useState(0);
     const [timerActive, setTimerActive] = useState(true);
+
+    const { speak } = useVoiceFeedback();
+    const prevRepsRef = useRef(0);
+
+    useEffect(() => {
+        if (poseData) {
+            // Rep Counting Voice
+            if (poseData.reps && poseData.reps > prevRepsRef.current) {
+                speak(poseData.reps.toString(), true);
+                prevRepsRef.current = poseData.reps;
+            }
+            
+            // Feedback Voice
+            if (poseData.feedback?.message) {
+                 const msg = poseData.feedback.message;
+                 if (msg !== 'READY' && msg !== 'REP COMPLETE' && msg !== 'GO DOWN' && msg !== 'START') {
+                    // Filter out common status messages to reduce noise, enable specific ones
+                    speak(msg);
+                 }
+            }
+        }
+    }, [poseData, speak]);
 
     useEffect(() => {
         let interval: ReturnType<typeof setInterval>;
@@ -75,6 +98,7 @@ const WorkoutView = () => {
                         
                         <div className="absolute inset-0 flex items-center justify-center p-1">
                              <WebcamCapture
+                                activeExercise={activeExercise}
                                 onConnectionStatus={setConnectionStatus}
                                 onPoseDataUpdate={setPoseData}
                                 poseData={poseData}

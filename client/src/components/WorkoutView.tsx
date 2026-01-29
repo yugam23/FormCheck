@@ -8,6 +8,8 @@ import StatsPanel from './StatsPanel';
 import { cn } from '../lib/utils';
 import type { PoseData } from '../types';
 
+const API_URL = 'http://localhost:8000';
+
 const WorkoutView = () => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -18,6 +20,7 @@ const WorkoutView = () => {
     const [sessionTime, setSessionTime] = useState(0);
     const [timerActive, setTimerActive] = useState(false);
     const [isSessionActive, setIsSessionActive] = useState(false);
+    const [isEnding, setIsEnding] = useState(false);
 
     const { speak } = useVoiceFeedback();
     const prevRepsRef = useRef(0);
@@ -57,9 +60,30 @@ const WorkoutView = () => {
     };
 
     const endWorkout = () => {
+        if (isEnding) return;
+        setIsEnding(true);
+        
         setIsSessionActive(false);
         setTimerActive(false);
         speak("Session ended", true);
+
+        // Save session data in background
+        if (poseData?.reps && poseData.reps > 0) {
+            // Fire and forget with keepalive
+            fetch(`${API_URL}/api/save-session`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                keepalive: true,
+                body: JSON.stringify({
+                    exercise: activeExercise,
+                    reps: poseData.reps,
+                    duration: sessionTime,
+                }),
+            }).catch(err => console.error("Failed to save session:", err));
+        }
+
         navigate('/dashboard');
     };
 

@@ -210,30 +210,14 @@ const WebcamCapture = ({ activeExercise = 'Pushups', onConnectionStatus, onPoseD
                 </div>
             )}
 
-            {/* Feedback Text Overlay - Not Mirrored */}
+            {/* Feedback Text Overlay - Removed per user request */}
+            {/* 
             {poseData?.feedback && (
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none z-10 flex flex-col items-center justify-center">
-                    {poseData.feedback.message && (
-                        <h2
-                            className="text-5xl font-display font-black tracking-tighter drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] transition-all duration-300"
-                            style={{ 
-                                color: poseData.feedback.color === 'red' ? '#EF4444' : '#10B981',
-                                WebkitTextStroke: '2px black'
-                            }}
-                        >
-                            {poseData.feedback.message}
-                        </h2>
-                    )}
-                    
-                    {poseData.feedback.angle !== undefined && (
-                        <div className="bg-black/50 backdrop-blur-md px-4 py-2 rounded-full mt-4 border border-white/20">
-                            <p className="text-2xl text-white font-mono font-bold">
-                                {Math.round(poseData.feedback.angle)}°
-                            </p>
-                        </div>
-                    )}
+                   
                 </div>
-            )}
+            )} 
+            */}
 
             {/* Stats Overlay */}
             <div className="absolute top-4 right-4 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-lg text-white border border-white/5 flex items-center space-x-2">

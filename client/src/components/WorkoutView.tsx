@@ -149,6 +149,7 @@ const WorkoutView = () => {
                             repData={poseData?.reps ? { rep_count: poseData.reps, form_quality_score: 85 } : undefined} // Mock score if missing
                             feedback={poseData?.feedback}
                             sessionTime={sessionTime}
+                            exerciseName={activeExercise}
                         />
                     </div>
 

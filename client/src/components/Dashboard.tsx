@@ -1,6 +1,6 @@
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area, CartesianGrid, PieChart, Pie, Cell, Legend } from 'recharts';
 import { Calendar, TrendingUp, Trophy, ArrowUpRight, Activity, Clock, Dumbbell, Trash2, X, Medal, PieChart as PieIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useLayoutEffect } from 'react';
 import type { Session } from '../types';
 
 const API_URL = 'http://localhost:8000';
@@ -25,6 +25,9 @@ const Dashboard = () => {
     const [historySessions, setHistorySessions] = useState<Session[]>([]);
 
     const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ec4899'];
+
+    const leftColRef = useRef<HTMLDivElement>(null);
+    const [rightColHeight, setRightColHeight] = useState<number | undefined>(undefined);
 
     const refreshData = async () => {
         try {
@@ -62,6 +65,37 @@ const Dashboard = () => {
     useEffect(() => {
         refreshData();
     }, []);
+
+    // Sync heights
+    useLayoutEffect(() => {
+        const updateHeight = () => {
+            if (window.innerWidth >= 768 && leftColRef.current) {
+                setRightColHeight(leftColRef.current.offsetHeight);
+            } else {
+                setRightColHeight(undefined);
+            }
+        };
+
+        // Initial update
+        // We might need a small delay or ResizeObserver if content loads dynamically and doesn't trigger re-render in a way we catch immediately (though state updates usually do)
+        // Actually ResizeObserver is best.
+        
+        const resizeObserver = new ResizeObserver(() => {
+            updateHeight();
+        });
+
+        if (leftColRef.current) {
+            resizeObserver.observe(leftColRef.current);
+        }
+        
+        window.addEventListener('resize', updateHeight);
+        updateHeight(); // Call once immediately
+
+        return () => {
+             resizeObserver.disconnect();
+             window.removeEventListener('resize', updateHeight);
+        };
+    }, [stats, chartData, analytics]); // Re-setup if data structure radically changes, but ResizeObserver handles size changes
 
     const processChartData = (data: Session[]) => {
         // Process Chart Data (Reps per day for last 7 days)
@@ -167,9 +201,24 @@ const Dashboard = () => {
         }
     };
 
+    // Format time helper reuse/move out if commonly used
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    };
+
+    const formatMetric = (exercise: string, value: number) => {
+        if (exercise === 'Plank') {
+            return { value: formatTime(value), unit: 'Time' };
+        }
+        return { value: value.toString(), unit: 'Reps' };
+    };
+
     return (
         <div className="space-y-8 animate-fade-in pb-12">
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                {/* ... Header content ... */}
                 <div>
                     <h2 className="text-4xl font-display font-bold text-white mb-2">Dashboard</h2>
                     <p className="text-muted-foreground">Welcome back, Athlete. Here is your performance overview.</p>
@@ -187,7 +236,7 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 pb-24">
                 
                 {/* === LEFT COLUMN (MAIN STATS & CHARTS) === */}
-                <div className="md:col-span-8 flex flex-col gap-6">
+                <div ref={leftColRef} className="md:col-span-8 flex flex-col gap-6 h-full">
                     
                     {/* Top Stats Row */}
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
@@ -343,15 +392,18 @@ const Dashboard = () => {
                                 Personal Records
                             </h3>
                             <div className="space-y-3">
-                                {analytics.prs.map((pr, i) => (
+                                {analytics.prs.map((pr, i) => {
+                                    const metric = formatMetric(pr.exercise, pr.reps);
+                                    return (
                                     <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
                                         <span className="font-medium text-sm text-white/90">{pr.exercise}</span>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-xl font-bold font-display text-white">{pr.reps}</span>
-                                            <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Reps</span>
+                                            <span className="text-xl font-bold font-display text-white">{metric.value}</span>
+                                            <span className="text-[10px] text-muted-foreground uppercase tracking-widest">{metric.unit}</span>
                                         </div>
                                     </div>
-                                ))}
+                                    );
+                                })}
                                 {analytics.prs.length === 0 && (
                                      <div className="text-center text-muted-foreground text-sm py-10 opacity-50">
                                         No records yet
@@ -364,7 +416,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* === RIGHT COLUMN (SIDEBAR) === */}
-                <div className="md:col-span-4 flex flex-col gap-6">
+                <div className="md:col-span-4 flex flex-col gap-6 overflow-hidden" style={{ height: rightColHeight }}>
                     
                     {/* Weekly Goal */}
                     <div className="glass-panel p-8 rounded-3xl flex flex-col items-center justify-center relative bg-gradient-to-br from-white/5 to-white/[0.02]">
@@ -432,41 +484,48 @@ const Dashboard = () => {
                     </div>
 
                     {/* Recent Sets Sidebar */}
-                    <div className="glass-panel p-6 rounded-3xl flex-1 flex flex-col min-h-[400px]">
+                    <div className="glass-panel p-6 rounded-3xl flex-1 flex flex-col min-h-0"> {/* Dynamic height to align with left column */}
                         <h3 className="font-bold text-lg mb-6 flex items-center">
                             <Clock size={20} className="mr-2 text-muted-foreground" />
                             Recent Activity
                         </h3>
-                        <div className="space-y-4 overflow-y-auto pr-2 custom-scrollbar flex-1 max-h-[500px]">
+                        <div className="space-y-3 overflow-y-auto pr-2 custom-scrollbar flex-1">
                             {sessions.length === 0 ? (
                                 <div className="text-center text-muted-foreground text-sm py-12 flex flex-col items-center opacity-50">
                                     <Clock size={32} className="mb-3 opacity-20" />
                                     No sessions yet.
                                 </div>
-                            ) : sessions.map((session) => (
-                                <div key={session.id} className="p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all group relative pr-10">
+                            ) : sessions.map((session) => {
+                                const metric = formatMetric(session.exercise, session.reps);
+                                return (
+                                <div key={session.id} className="p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors flex justify-between items-center group relative cursor-default">
                                     <button 
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             handleDeleteSession(session.id!);
                                         }}
-                                        className="absolute right-3 top-3 p-1.5 text-muted-foreground hover:text-red-400 hover:bg-white/20 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+                                        className="absolute right-2 top-2 p-1.5 text-muted-foreground hover:text-red-400 hover:bg-white/20 rounded-lg opacity-0 group-hover:opacity-100 transition-all z-10"
                                         title="Delete Session"
                                     >
                                         <Trash2 size={14} />
                                     </button>
-                                    <div className="flex justify-between items-center mb-2">
-                                        <span className="font-semibold text-sm group-hover:text-primary transition-colors">{session.exercise}</span>
-                                        <span className="text-xs font-bold px-2 py-0.5 rounded-full text-green-400 bg-green-400/10 border border-green-400/10">
-                                            {session.reps} Reps
+                                    
+                                    <div className="flex flex-col">
+                                        <span className="font-medium text-sm text-white/90">{session.exercise}</span>
+                                        <span className="text-[11px] text-muted-foreground mt-0.5">
+                                            {new Date(session.timestamp * 1000).toLocaleDateString()}
+                                            <span className="mx-1">•</span>
+                                            {new Date(session.timestamp * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                                         </span>
                                     </div>
-                                    <div className="flex justify-between text-[11px] text-muted-foreground font-medium uppercase tracking-wide">
-                                        <span>{new Date(session.timestamp * 1000).toLocaleDateString()}</span>
-                                        <span>{new Date(session.timestamp * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xl font-bold font-display text-white">{metric.value}</span>
+                                        <span className="text-[10px] text-muted-foreground uppercase tracking-widest">{metric.unit}</span>
                                     </div>
                                 </div>
-                            ))}
+                                );
+                            })}
                         </div>
                         <button 
                             onClick={handleClearHistory}
@@ -499,7 +558,9 @@ const Dashboard = () => {
                                     <p>No workout history found.</p>
                                 </div>
                             ) : (
-                                historySessions.map((session) => (
+                                historySessions.map((session) => {
+                                    const metric = formatMetric(session.exercise, session.reps);
+                                    return (
                                     <div key={session.id} className="p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors flex justify-between items-center group relative cursor-default">
                                          <div className="flex items-center gap-4">
                                             <div className="p-3 bg-primary/10 text-primary rounded-lg">
@@ -514,8 +575,8 @@ const Dashboard = () => {
                                          </div>
                                          <div className="flex items-center gap-6">
                                             <div className="text-right">
-                                                <span className="block text-xl font-bold text-white">{session.reps}</span>
-                                                <span className="text-xs text-muted-foreground uppercase tracking-wider">Reps</span>
+                                                <span className="block text-xl font-bold text-white">{metric.value}</span>
+                                                <span className="text-xs text-muted-foreground uppercase tracking-wider">{metric.unit}</span>
                                                 {session.duration && session.duration > 0 && <span className="block text-xs text-muted-foreground mt-1">{session.duration}s</span>}
                                             </div>
                                             <button 
@@ -540,7 +601,8 @@ const Dashboard = () => {
                                             </button>
                                          </div>
                                     </div>
-                                ))
+                                    );
+                                })
                             )}
                         </div>
                         <div className="p-4 border-t border-white/10 bg-white/5 rounded-b-2xl flex justify-end">

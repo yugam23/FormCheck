@@ -1,14 +1,64 @@
 
 import { Play, ArrowRight, Activity, Zap, Trophy } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 
 const HomeView = () => {
     const navigate = useNavigate();
+    const [showAll, setShowAll] = useState(false);
 
     const startWorkout = (exercise: string) => {
         navigate('/workout', { state: { exercise } });
     };
+
+    const exercises = [
+        {
+            id: 'Pushups',
+            title: 'Pushups',
+            description: 'Master the fundamental pushing movement. accurate dept detection and elbow tuck analysis.',
+            target: 'CHEST, TRICEPS',
+            difficulty: 'BEGINNER',
+            type: 'UPPER BODY',
+            // Pre-defined classes to ensure Tailwind scans them
+            shadowColor: 'hover:shadow-primary/20',
+            ringColor: 'focus-visible:ring-primary',
+            bgGradient: 'from-zinc-800 via-zinc-950 to-black',
+            glowColor: 'bg-primary/20',
+            textColor: 'text-primary',
+            badgeBg: 'bg-primary/20'
+        },
+        {
+            id: 'Squats',
+            title: 'Squats',
+            description: 'The king of leg exercises. Monitors hip depth, knee alignment, and back posture.',
+            target: 'QUADS, GLUTES',
+            difficulty: 'INTERMEDIATE',
+            type: 'LOWER BODY',
+            shadowColor: 'hover:shadow-blue-500/20',
+            ringColor: 'focus-visible:ring-blue-500',
+            bgGradient: 'from-zinc-800 via-zinc-950 to-black',
+            glowColor: 'bg-blue-500/20',
+            textColor: 'text-blue-400',
+            badgeBg: 'bg-blue-500/20'
+        },
+        {
+            id: 'Plank',
+            title: 'Plank',
+            description: 'Build core stability. Monitors back alignment and duration.',
+            target: 'CORE, ABS',
+            difficulty: 'BEGINNER',
+            type: 'CORE',
+            shadowColor: 'hover:shadow-emerald-500/20',
+            ringColor: 'focus-visible:ring-emerald-500',
+            bgGradient: 'from-zinc-800 via-zinc-950 to-black',
+            glowColor: 'bg-emerald-500/20',
+            textColor: 'text-emerald-400',
+            badgeBg: 'bg-emerald-500/20'
+        }
+    ];
+
+    const visibleExercises = showAll ? exercises : exercises.slice(0, 2);
 
     return (
         <div className="relative space-y-24 animate-fade-in pb-20">
@@ -67,85 +117,54 @@ const HomeView = () => {
                         <h2 className="text-4xl font-display font-bold">Select Exercise</h2>
                         <p className="text-muted-foreground mt-2">Choose a movement to begin analysis</p>
                     </div>
-                    <button className="text-sm font-medium text-primary hover:text-primary/80 transition-colors flex items-center">
-                        View all <ArrowRight size={16} className="ml-1" />
+                    <button 
+                        onClick={() => setShowAll(!showAll)}
+                        className="text-sm font-medium text-primary hover:text-primary/80 transition-colors flex items-center"
+                    >
+                        {showAll ? 'Show less' : 'View all'} <ArrowRight size={16} className={`ml-1 transition-transform ${showAll ? 'rotate-180' : ''}`} />
                     </button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto px-4">
-                    {/* Pushup Card */}
-                    <button
-                        type="button"
-                        className="group relative h-96 w-full text-left rounded-3xl overflow-hidden cursor-pointer border border-white/5 bg-zinc-900 shadow-2xl transition-all duration-500 hover:shadow-primary/20 hover:scale-[1.01] focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                        onClick={() => startWorkout('Pushups')}
-                        aria-label="Start Pushups Workout"
-                    >
-                        {/* Background Image / Gradient */}
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-zinc-800 via-zinc-950 to-black opacity-80 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        <div className="absolute inset-0 bg-grid-white/[0.02] bg-[length:32px_32px]"></div>
-                        
-                        {/* Glow Effect */}
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-[80px] opacity-0 group-hover:opacity-40 transition-opacity duration-700"></div>
+                    {visibleExercises.map((ex) => (
+                        <button
+                            key={ex.id}
+                            type="button"
+                            className={`group relative h-96 w-full text-left rounded-3xl overflow-hidden cursor-pointer border border-white/5 bg-zinc-900 shadow-2xl transition-all duration-500 ${ex.shadowColor} hover:scale-[1.01] focus-visible:ring-2 ${ex.ringColor} focus-visible:ring-offset-2 focus-visible:ring-offset-background`}
+                            onClick={() => startWorkout(ex.id)}
+                            aria-label={`Start ${ex.title} Workout`}
+                        >
+                            {/* Background Image / Gradient */}
+                            <div className={`absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] ${ex.bgGradient} opacity-80 group-hover:opacity-100 transition-opacity duration-500`}></div>
+                            <div className="absolute inset-0 bg-grid-white/[0.02] bg-[length:32px_32px]"></div>
+                            
+                            {/* Glow Effect */}
+                            <div className={`absolute top-0 right-0 w-64 h-64 ${ex.glowColor} rounded-full blur-[80px] opacity-0 group-hover:opacity-40 transition-opacity duration-700`}></div>
 
-                        <div className="absolute inset-0 p-8 flex flex-col justify-end z-10">
-                            <div className="space-y-4 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <div className="inline-block px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold mb-3 tracking-wider">UPPER BODY</div>
-                                        <h3 className="text-4xl font-bold text-white mb-2 font-display">Pushups</h3>
-                                        <p className="text-zinc-400 max-w-xs text-sm leading-relaxed">
-                                            Master the fundamental pushing movement. accurate dept detection and elbow tuck analysis.
-                                        </p>
+                            <div className="absolute inset-0 p-8 flex flex-col justify-end z-10">
+                                <div className="space-y-4 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <div className={`inline-block px-3 py-1 rounded-full ${ex.badgeBg} ${ex.textColor} text-xs font-bold mb-3 tracking-wider`}>{ex.type}</div>
+                                            <h3 className="text-4xl font-bold text-white mb-2 font-display">{ex.title}</h3>
+                                            <p className="text-zinc-400 max-w-xs text-sm leading-relaxed">
+                                                {ex.description}
+                                            </p>
+                                        </div>
+                                        <div className="w-14 h-14 rounded-full bg-white text-black flex items-center justify-center opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all duration-300 shadow-lg shadow-white/20">
+                                            <Play fill="currentColor" size={24} className="ml-1" />
+                                        </div>
                                     </div>
-                                    <div className="w-14 h-14 rounded-full bg-white text-black flex items-center justify-center opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all duration-300 shadow-lg shadow-white/20">
-                                        <Play fill="currentColor" size={24} className="ml-1" />
+                                    
+                                    <div className="pt-4 flex items-center gap-4 text-xs font-mono text-zinc-500 opacity-60 group-hover:opacity-100 transition-opacity delay-100">
+                                        <span>DIFFICULTY: {ex.difficulty}</span>
+                                        <span>•</span>
+                                        <span>TARGET: {ex.target}</span>
                                     </div>
-                                </div>
-                                
-                                <div className="pt-4 flex items-center gap-4 text-xs font-mono text-zinc-500 opacity-60 group-hover:opacity-100 transition-opacity delay-100">
-                                    <span>DIFFICULTY: BEGINNER</span>
-                                    <span>•</span>
-                                    <span>TARGET: CHEST, TRICEPS</span>
                                 </div>
                             </div>
-                        </div>
-                    </button>
-
-                    {/* Squat Card */}
-                    <button
-                        type="button"
-                        className="group relative h-96 w-full text-left rounded-3xl overflow-hidden cursor-pointer border border-white/5 bg-zinc-900 shadow-2xl transition-all duration-500 hover:shadow-blue-500/20 hover:scale-[1.01] focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                        onClick={() => startWorkout('Squats')}
-                        aria-label="Start Squats Workout"
-                    >
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-zinc-800 via-zinc-950 to-black opacity-80 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        <div className="absolute inset-0 bg-grid-white/[0.02] bg-[length:32px_32px]"></div>
-                        
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/20 rounded-full blur-[80px] opacity-0 group-hover:opacity-40 transition-opacity duration-700"></div>
-
-                        <div className="absolute inset-0 p-8 flex flex-col justify-end z-10">
-                            <div className="space-y-4 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <div className="inline-block px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold mb-3 tracking-wider">LOWER BODY</div>
-                                        <h3 className="text-4xl font-bold text-white mb-2 font-display">Squats</h3>
-                                        <p className="text-zinc-400 max-w-xs text-sm leading-relaxed">
-                                            The king of leg exercises. Monitors hip depth, knee alignment, and back posture.
-                                        </p>
-                                    </div>
-                                    <div className="w-14 h-14 rounded-full bg-white text-black flex items-center justify-center opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all duration-300 shadow-lg shadow-white/20">
-                                        <Play fill="currentColor" size={24} className="ml-1" />
-                                    </div>
-                                </div>
-                                
-                                <div className="pt-4 flex items-center gap-4 text-xs font-mono text-zinc-500 opacity-60 group-hover:opacity-100 transition-opacity delay-100">
-                                    <span>DIFFICULTY: INTERMEDIATE</span>
-                                    <span>•</span>
-                                    <span>TARGET: QUADS, GLUBES</span>
-                                </div>
-                            </div>
-                        </div>
-                    </button>
+                        </button>
+                    ))}
                 </div>
             </section>
         </div>

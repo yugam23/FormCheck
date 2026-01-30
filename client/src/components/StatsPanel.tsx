@@ -17,9 +17,10 @@ interface StatsPanelProps {
     feedback?: Feedback;
     sessionTime: number;
     className?: string;
+    exerciseName: string;
 }
 
-const StatsPanel = ({ repData, feedback, sessionTime, className }: StatsPanelProps) => {
+const StatsPanel = ({ repData, feedback, sessionTime, className, exerciseName }: StatsPanelProps) => {
     // Format time mm:ss
     const formatTime = (seconds: number) => {
         const mins = Math.floor(seconds / 60);
@@ -28,6 +29,7 @@ const StatsPanel = ({ repData, feedback, sessionTime, className }: StatsPanelPro
     };
 
     const score = repData?.form_quality_score || 0;
+    const isPlank = exerciseName === 'Plank';
 
     return (
         <div className={cn("space-y-6", className)}>
@@ -43,10 +45,10 @@ const StatsPanel = ({ repData, feedback, sessionTime, className }: StatsPanelPro
                     <div className="absolute top-0 right-0 p-16 bg-primary/10 rounded-full blur-2xl opacity-20"></div>
                     <div className="flex items-center space-x-2 text-muted-foreground mb-1">
                         <Activity size={16} />
-                        <span className="text-[10px] font-bold uppercase tracking-widest">Rep Count</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest">{isPlank ? 'Hold Time' : 'Rep Count'}</span>
                     </div>
                     <div className="text-6xl font-display font-bold text-white tracking-tight">
-                        {repData?.rep_count || 0}
+                        {isPlank ? formatTime(repData?.rep_count || 0) : (repData?.rep_count || 0)}
                     </div>
                     <div className="h-1 w-full bg-white/10 mt-4 rounded-full overflow-hidden">
                         <div className="h-full bg-primary/80 w-1/3 animate-pulse"></div>

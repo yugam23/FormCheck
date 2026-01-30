@@ -30,4 +30,9 @@ frontend/.env
 # Docs
 docs/
 
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
 todo.md

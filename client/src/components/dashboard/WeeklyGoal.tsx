@@ -1,0 +1,89 @@
+import React, { useState } from 'react';
+import { Trophy } from 'lucide-react';
+
+interface WeeklyGoalProps {
+    currentReps: number;
+    goal: number;
+    onUpdateGoal: (newGoal: number) => Promise<void>;
+}
+
+export const WeeklyGoal: React.FC<WeeklyGoalProps> = ({ currentReps, goal, onUpdateGoal }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [inputValue, setInputValue] = useState(goal.toString());
+
+    const handleSave = async () => {
+        const val = parseInt(inputValue);
+        if (isNaN(val) || val <= 0) return alert("Invalid Goal");
+        await onUpdateGoal(val);
+        setIsEditing(false);
+    };
+
+    return (
+        <div className="glass-panel p-8 rounded-3xl flex flex-col items-center justify-center relative bg-gradient-to-br from-white/5 to-white/[0.02]">
+            <div className="w-full flex justify-between items-center mb-4 absolute top-6 px-6">
+                <h3 className="font-bold text-lg flex items-center">
+                    <Trophy size={18} className="mr-2 text-primary" />
+                    Weekly Goal
+                </h3>
+                <button
+                    onClick={() => {
+                        setInputValue(goal.toString());
+                        setIsEditing(true);
+                    }}
+                    className="text-xs text-muted-foreground hover:text-white transition-colors bg-white/10 px-2 py-1 rounded-md"
+                >
+                    Edit
+                </button>
+            </div>
+
+            {isEditing ? (
+                <div className="flex flex-col items-center gap-3 mt-12 animate-fade-in">
+                    <input
+                        type="number"
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        className="bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-white text-xl w-32 text-center focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        autoFocus
+                    />
+                    <div className="flex gap-2 w-full">
+                        <button onClick={handleSave} className="flex-1 py-1.5 bg-primary text-black text-xs font-bold rounded-lg hover:bg-primary/90">Save</button>
+                        <button onClick={() => setIsEditing(false)} className="flex-1 py-1.5 bg-white/10 text-white text-xs font-medium rounded-lg hover:bg-white/20">Cancel</button>
+                    </div>
+                </div>
+            ) : (
+                <div className="relative w-56 h-56 mt-6 flex items-center justify-center">
+                     <svg className="w-full h-full transform -rotate-90">
+                        <circle cx="50%" cy="50%" r="90" stroke="rgba(255,255,255,0.05)" strokeWidth="12" fill="transparent" />
+                        <circle
+                            cx="50%" cy="50%" r="90"
+                            stroke="hsl(var(--primary))"
+                            strokeWidth="12"
+                            fill="transparent"
+                            strokeDasharray={565}
+                            strokeDashoffset={565 - (Math.min(currentReps, goal) / goal) * 565}
+                            strokeLinecap="round"
+                            className="transition-all duration-1000 ease-out"
+                            filter="url(#glow)"
+                        />
+                        <defs>
+                            <filter id="glow">
+                                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-5xl font-display font-bold text-white tracking-tighter">{Math.round((currentReps / goal) * 100)}%</span>
+                        <span className="text-xs text-muted-foreground mt-2 font-medium bg-white/5 px-2 py-1 rounded-full">{currentReps} / {goal} Reps</span>
+                    </div>
+                </div>
+            )}
+            <p className="text-xs text-muted-foreground/50 mt-4 text-center max-w-[200px] leading-relaxed">
+                Keep pushing! You're making close to your weekly target.
+            </p>
+        </div>
+    );
+};

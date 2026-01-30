@@ -1,12 +1,13 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft, LogOut } from 'lucide-react';
+import { ChevronLeft, LogOut, Loader2 } from 'lucide-react';
 import { useVoiceFeedback } from '../hooks/useVoiceFeedback';
 import WebcamCapture from './WebcamCapture';
 import StatsPanel from './StatsPanel';
 import { cn } from '../lib/utils';
 import type { PoseData } from '../types';
+import { handleApiResponse, ApiError } from '../lib/errorHandler';
 
 const API_URL = 'http://localhost:8000';
 
@@ -21,6 +22,7 @@ const WorkoutView = () => {
     const [timerActive, setTimerActive] = useState(false);
     const [isSessionActive, setIsSessionActive] = useState(false);
     const [isEnding, setIsEnding] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     const { speak } = useVoiceFeedback();
     const prevRepsRef = useRef(0);
@@ -59,29 +61,37 @@ const WorkoutView = () => {
         speak("Session started", true);
     };
 
-    const endWorkout = () => {
-        if (isEnding) return;
+    const endWorkout = async () => {
+        if (isEnding || isSaving) return;
         setIsEnding(true);
         
         setIsSessionActive(false);
         setTimerActive(false);
         speak("Session ended", true);
 
-        // Save session data in background
+        // Save session data
         if (poseData?.reps && poseData.reps > 0) {
-            // Fire and forget with keepalive
-            fetch(`${API_URL}/api/save-session`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                keepalive: true,
-                body: JSON.stringify({
-                    exercise: activeExercise,
-                    reps: poseData.reps,
-                    duration: sessionTime,
-                }),
-            }).catch(err => console.error("Failed to save session:", err));
+            setIsSaving(true);
+            try {
+                const response = await fetch(`${API_URL}/api/save-session`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        exercise: activeExercise,
+                        reps: poseData.reps,
+                        duration: sessionTime,
+                    }),
+                });
+                await handleApiResponse(response);
+            } catch (err) {
+                console.error("Failed to save session:", err);
+                const message = err instanceof ApiError ? err.message : "Failed to save workout data";
+                alert(message); // Temporary fallback for Phase 1
+            } finally {
+                setIsSaving(false);
+            }
         }
 
         navigate('/dashboard');
@@ -95,6 +105,7 @@ const WorkoutView = () => {
                     <button
                         onClick={() => navigate('/dashboard')}
                         className="p-2 hover:bg-white/10 rounded-full transition-colors text-muted-foreground hover:text-white"
+                        disabled={isSaving}
                     >
                         <ChevronLeft size={24} />
                     </button>
@@ -163,10 +174,20 @@ const WorkoutView = () => {
                     ) : (
                         <button
                             onClick={endWorkout}
+                            disabled={isSaving}
                             className="w-full btn-secondary bg-red-500/5 hover:bg-red-500/20 border-red-500/20 hover:border-red-500/50 text-red-400 hover:text-red-300 flex items-center justify-center space-x-2 py-4"
                         >
-                            <LogOut size={18} />
-                            <span>End Session</span>
+                            {isSaving ? (
+                                <>
+                                    <Loader2 size={18} className="animate-spin" />
+                                    <span>Saving...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <LogOut size={18} />
+                                    <span>End Session</span>
+                                </>
+                            )}
                         </button>
                     )}
                 </div>

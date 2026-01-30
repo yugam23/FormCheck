@@ -29,7 +29,7 @@ const WebcamCapture = ({ activeExercise = 'Pushups', onConnectionStatus, onPoseD
         share: true,
         shouldReconnect: () => true,
         reconnectAttempts: 10,
-        reconnectInterval: (attemptNumber) => Math.min(Math.pow(2, attemptNumber) * 1000, 10000), // Exponential backoff
+        reconnectInterval: (attemptNumber: number) => Math.min(Math.pow(2, attemptNumber) * 1000, 10000), // Exponential backoff
         onOpen: () => {
              // Send Init Message on Connect
             const initMsg = {
@@ -81,14 +81,15 @@ const WebcamCapture = ({ activeExercise = 'Pushups', onConnectionStatus, onPoseD
     useEffect(() => {
         if (lastMessage) {
             try {
-                const data = JSON.parse(lastMessage.data);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const data: any = JSON.parse(lastMessage.data);
                 // Server sends: { type: "RESULT", landmarks: [], feedback: {}, ... }
                 // or { type: "NO_DETECTION" }
                 
                 if (data.type === 'RESULT') {
                     // Update parent ONLY
                     if (onPoseDataUpdate) {
-                        onPoseDataUpdate(data);
+                        onPoseDataUpdate(data as PoseData);
                     }
                 } else if (data.type === 'NO_DETECTION') {
                      // Notify parent of no detection to clear skeletons

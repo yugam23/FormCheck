@@ -1,20 +1,10 @@
-
 import { Timer, Activity, Zap } from 'lucide-react';
 import { cn } from '../lib/utils';
-
-interface RepData {
-    rep_count: number;
-    form_quality_score: number;
-}
-
-interface Feedback {
-    message: string;
-    color: 'red' | 'green';
-}
+import type { RepData, FeedbackData } from '../types';
 
 interface StatsPanelProps {
     repData?: RepData;
-    feedback?: Feedback;
+    feedback?: FeedbackData;
     sessionTime: number;
     className?: string;
     exerciseName: string;

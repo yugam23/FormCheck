@@ -2,6 +2,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 import json
 import logging
+import time
 from typing import Dict, Any
 
 from app.core.pose_detector import PoseDetector
@@ -43,11 +44,37 @@ def health_check():
 
 @app.get("/api/sessions")
 def get_sessions(limit: int = 10):
-    """Return recent workout sessions"""
     return db.get_recent_sessions(limit)
 
 
+@app.get("/api/stats")
+def get_stats():
+    """Return dashboard stats (streak, total reps, etc)"""
+    return db.get_stats()
+
+
+@app.get("/api/analytics")
+def get_analytics():
+    """Return advanced analytics (PRs, Distribution)"""
+    return db.get_analytics()
+
+
 from pydantic import BaseModel
+
+
+class GoalUpdate(BaseModel):
+    goal: int
+
+
+@app.get("/api/settings/goal")
+def get_goal():
+    return {"goal": db.get_goal()}
+
+
+@app.post("/api/settings/goal")
+def set_goal(data: GoalUpdate):
+    db.set_goal(data.goal)
+    return {"status": "updated", "goal": data.goal}
 
 
 class SessionCreate(BaseModel):
@@ -87,7 +114,7 @@ async def websocket_endpoint(websocket: WebSocket):
     active_sessions[websocket] = {
         "strategy": get_strategy("Pushups"),
         "name": "Pushups",
-        "start_time": None,  # Could track duration
+        "start_time": time.time(),
     }
 
     try:
@@ -105,6 +132,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     active_sessions[websocket] = {
                         "strategy": get_strategy(exercise_name),
                         "name": exercise_name,
+                        "start_time": time.time(),
                     }
                     logger.info(f"Client initialized exercise: {exercise_name}")
 
@@ -157,5 +185,11 @@ async def websocket_endpoint(websocket: WebSocket):
             name = session["name"]
             # Save if there was activity (reps > 0)
             if strategy.reps > 0:
-                logger.info(f"Saving session: {name} - {strategy.reps} reps")
-                db.save_session(name, strategy.reps)
+                end_time = time.time()
+                start_time = session.get("start_time", end_time)
+                duration = int(end_time - start_time) if start_time else 0
+
+                logger.info(
+                    f"Saving session: {name} - {strategy.reps} reps - {duration}s"
+                )
+                db.save_session(name, strategy.reps, duration)

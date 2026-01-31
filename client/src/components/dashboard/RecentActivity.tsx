@@ -21,7 +21,7 @@ interface RecentActivityProps {
  *
  * @param props - Component props containing sessions and handlers
  */
-export const RecentActivity: React.FC<RecentActivityProps> = ({ sessions, onDeleteSession, onClearHistory }) => {
+export const RecentActivity = React.memo<RecentActivityProps>(({ sessions, onDeleteSession, onClearHistory }) => {
     return (
         <div className="glass-panel p-6 rounded-3xl flex-1 flex flex-col min-h-0">
             <h3 className="font-bold text-lg mb-6 flex items-center">
@@ -52,4 +52,4 @@ export const RecentActivity: React.FC<RecentActivityProps> = ({ sessions, onDele
             </button>
         </div>
     );
-};
+});

@@ -21,7 +21,7 @@ interface ActivityChartProps {
  *
  * @param props - Component props containing chart data
  */
-export const ActivityChart: React.FC<ActivityChartProps> = ({ data }) => {
+export const ActivityChart = React.memo<ActivityChartProps>(({ data }) => {
     return (
         <div className="glass-panel p-6 rounded-3xl min-h-[350px]">
             <div className="flex justify-between items-center mb-6">
@@ -79,4 +79,4 @@ export const ActivityChart: React.FC<ActivityChartProps> = ({ data }) => {
             </div>
         </div>
     );
-};
+});

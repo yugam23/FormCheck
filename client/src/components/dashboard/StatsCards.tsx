@@ -18,7 +18,7 @@ interface StatsCardsProps {
  *
  * @param props - Component props containing stats data
  */
-export const StatsCards: React.FC<StatsCardsProps> = ({ stats }) => {
+export const StatsCards = React.memo<StatsCardsProps>(({ stats }) => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
             {/* Total Reps */}
@@ -71,4 +71,4 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats }) => {
             </div>
         </div>
     );
-};
+});

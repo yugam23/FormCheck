@@ -1,11 +1,11 @@
 
 import { ArrowUpRight, AlertCircle, X } from 'lucide-react';
 import { useToast } from './ui/Toast';
-import { useEffect, useState, useRef, useLayoutEffect, useCallback } from 'react';
+import { useEffect, useState, useRef, useLayoutEffect, useCallback, useMemo } from 'react';
 import type { Session } from '../types';
 import { ApiError, handleApiResponse } from '../lib/errorHandler';
 import { StatsCards } from './dashboard/StatsCards';
-import { ActivityChart, type ChartDataPoint } from './dashboard/ActivityChart';
+import { ActivityChart } from './dashboard/ActivityChart';
 import { DistributionChart } from './dashboard/DistributionChart';
 import { PersonalRecords } from './dashboard/PersonalRecords';
 import { WeeklyGoal } from './dashboard/WeeklyGoal';
@@ -41,7 +41,7 @@ export const Dashboard: React.FC = () => {
         dayStreak: 0,
     });
 
-    const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
+
     const [analytics, setAnalytics] = useState<{
         distribution: { name: string; value: number }[];
         prs: { exercise: string; reps: number }[];
@@ -59,7 +59,7 @@ export const Dashboard: React.FC = () => {
     const leftColRef = useRef<HTMLDivElement>(null);
     const [rightColHeight, setRightColHeight] = useState<number | undefined>(undefined);
 
-    const processChartData = useCallback((data: Session[]) => {
+    const chartData = useMemo(() => {
         // Process Chart Data (Reps per day for last 7 days)
         const last7Days = new Array(7).fill(0).map((_, i) => {
             const d = new Date();
@@ -70,20 +70,18 @@ export const Dashboard: React.FC = () => {
         const dailyReps: Record<string, number> = {};
         last7Days.forEach(day => dailyReps[day] = 0);
 
-        data.forEach(session => {
+        sessions.forEach(session => {
             const date = new Date(session.timestamp * 1000).toISOString().split('T')[0];
             if (dailyReps[date] !== undefined) {
                 dailyReps[date] += session.reps;
             }
         });
 
-        const newChartData = last7Days.map(date => ({
+        return last7Days.map(date => ({
             day: new Date(date).toLocaleDateString('en-US', { weekday: 'short' }),
             reps: dailyReps[date]
         }));
-
-        setChartData(newChartData);
-    }, []);
+    }, [sessions]);
 
     const refreshData = useCallback(async () => {
         setIsLoading(true);
@@ -93,7 +91,6 @@ export const Dashboard: React.FC = () => {
             const sessionRes = await fetch(`${API_URL}/api/sessions`);
             const sessionData = await handleApiResponse<Session[]>(sessionRes);
             setSessions(sessionData);
-            processChartData(sessionData);
 
             // Fetch global stats (Totals + Streak)
             const statsRes = await fetch(`${API_URL}/api/stats`);
@@ -131,7 +128,7 @@ export const Dashboard: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [processChartData]);
+    }, []);
 
     useEffect(() => {
         refreshData();

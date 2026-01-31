@@ -16,7 +16,7 @@ interface PersonalRecordsProps {
  *
  * @param props - Component props containing PR data
  */
-export const PersonalRecords: React.FC<PersonalRecordsProps> = ({ prs }) => {
+export const PersonalRecords = React.memo<PersonalRecordsProps>(({ prs }) => {
     return (
         <div className="glass-panel p-6 rounded-3xl">
                 <h3 className="font-bold text-lg mb-6 flex items-center">
@@ -44,4 +44,4 @@ export const PersonalRecords: React.FC<PersonalRecordsProps> = ({ prs }) => {
             </div>
         </div>
     );
-};
+});

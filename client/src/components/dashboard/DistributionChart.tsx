@@ -17,7 +17,7 @@ interface DistributionChartProps {
  *
  * @param props - Component props containing data and color palette
  */
-export const DistributionChart: React.FC<DistributionChartProps> = ({ data, colors }) => {
+export const DistributionChart = React.memo<DistributionChartProps>(({ data, colors }) => {
     return (
         <div className="glass-panel p-6 rounded-3xl min-h-[300px] flex flex-col">
             <h3 className="font-bold text-lg mb-6 flex items-center">
@@ -54,4 +54,4 @@ export const DistributionChart: React.FC<DistributionChartProps> = ({ data, colo
             </div>
         </div>
     );
-};
+});

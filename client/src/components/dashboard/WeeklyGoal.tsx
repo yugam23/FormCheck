@@ -20,7 +20,7 @@ interface WeeklyGoalProps {
  *
  * @param props - Component props containing goal data and update handler
  */
-export const WeeklyGoal: React.FC<WeeklyGoalProps> = ({ currentReps, goal, onUpdateGoal }) => {
+export const WeeklyGoal = React.memo<WeeklyGoalProps>(({ currentReps, goal, onUpdateGoal }) => {
     const toast = useToast();
     const [isEditing, setIsEditing] = useState(false);
     const [inputValue, setInputValue] = useState(goal.toString());
@@ -103,4 +103,4 @@ export const WeeklyGoal: React.FC<WeeklyGoalProps> = ({ currentReps, goal, onUpd
             </p>
         </div>
     );
-};
+});

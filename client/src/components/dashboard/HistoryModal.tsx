@@ -25,7 +25,7 @@ interface HistoryModalProps {
  *
  * @param props - Component props containing modal state and handlers
  */
-export const HistoryModal: React.FC<HistoryModalProps> = ({ 
+export const HistoryModal = React.memo<HistoryModalProps>(({ 
     isOpen, 
     onClose, 
     sessions, 
@@ -74,4 +74,4 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({
             </div>
         </div>
     );
-};
+});

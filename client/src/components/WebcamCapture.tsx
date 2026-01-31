@@ -5,7 +5,7 @@ import SkeletonOverlay from './SkeletonOverlay';
 import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import type { PoseData } from '../types';
 
-import { VIDEO_WIDTH, VIDEO_HEIGHT, FRAME_RATE } from '../lib/constants';
+import { VIDEO_WIDTH, VIDEO_HEIGHT, FRAME_RATE, WS_URL } from '../lib/constants';
 
 /**
  * Props for the WebcamCapture component.
@@ -42,7 +42,7 @@ const WebcamCapture = ({ activeExercise = 'Pushups', onConnectionStatus, onPoseD
 
     // WebSocket Connection
     // Using port 8000/ws as per existing server config, shared connection
-    const { sendMessage, lastMessage, readyState } = useWebSocket('ws://localhost:8000/ws', { 
+    const { sendMessage, lastMessage, readyState } = useWebSocket(WS_URL, { 
         share: true,
         shouldReconnect: () => true,
         reconnectAttempts: 10,

@@ -1,7 +1,7 @@
 import { useRef, useEffect, useCallback } from 'react';
 import Webcam from 'react-webcam';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
-
+import { WS_URL } from '../lib/constants';
 
 
 const VIDEO_WIDTH = 480; // Reduced from 640 for speed
@@ -19,7 +19,7 @@ const FRAME_RATE = 12; // Cap at 12 FPS for stability
  */
 export function VideoFeed() {
   const webcamRef = useRef<Webcam>(null);
-  const { sendMessage, readyState } = useWebSocket('ws://localhost:8000/ws', { share: true });
+  const { sendMessage, readyState } = useWebSocket(WS_URL, { share: true });
 
   const captureAndSend = useCallback(() => {
     if (

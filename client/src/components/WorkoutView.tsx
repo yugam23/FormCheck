@@ -111,7 +111,11 @@ const WorkoutView = () => {
             }
         }
 
-        navigate('/dashboard');
+        // Use setTimeout to ensure state updates flush and navigation occurs
+        // This prevents race conditions where the component might be stuck in a re-render loop
+        setTimeout(() => {
+            navigate('/dashboard');
+        }, 100);
     };
 
     return (

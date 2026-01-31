@@ -11,6 +11,8 @@ import { PersonalRecords } from './dashboard/PersonalRecords';
 import { WeeklyGoal } from './dashboard/WeeklyGoal';
 import { RecentActivity } from './dashboard/RecentActivity';
 import { HistoryModal } from './dashboard/HistoryModal';
+import { StatsSkeleton, ChartSkeleton } from './ui/Skeleton';
+import { Loader2 } from 'lucide-react';
 
 import { API_URL, DEFAULT_WEEKLY_GOAL } from '../lib/constants';
 
@@ -49,6 +51,8 @@ export const Dashboard: React.FC = () => {
     const [showHistory, setShowHistory] = useState(false);
     const [historySessions, setHistorySessions] = useState<Session[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isExporting, setIsExporting] = useState(false);
 
     const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ec4899'];
 
@@ -82,6 +86,7 @@ export const Dashboard: React.FC = () => {
     }, []);
 
     const refreshData = useCallback(async () => {
+        setIsLoading(true);
         setError(null);
         try {
             // Fetch recent sessions for chart/feed
@@ -123,6 +128,8 @@ export const Dashboard: React.FC = () => {
                 ? `Failed to load data: ${err.message}`
                 : 'An unexpected error occurred while loading dashboard data.';
             setError(message);
+        } finally {
+            setIsLoading(false);
         }
     }, [processChartData]);
 
@@ -159,6 +166,8 @@ export const Dashboard: React.FC = () => {
     }, [stats, chartData, analytics]); // Re-setup if data structure radically changes, but ResizeObserver handles size changes
 
     const handleExport = async () => {
+        if (isExporting) return;
+        setIsExporting(true);
         try {
             const res = await fetch(`${API_URL}/api/sessions?limit=-1`);
             const data = await handleApiResponse<Session[]>(res);
@@ -177,12 +186,15 @@ export const Dashboard: React.FC = () => {
             a.download = `formcheck_export_${new Date().toISOString().split('T')[0]}.csv`;
             a.click();
             window.URL.revokeObjectURL(url);
+            toast.success("Export successful!");
         } catch (err) {
             console.error("Export failed", err);
             const message = err instanceof ApiError 
                 ? `Export failed: ${err.message}`
                 : 'Failed to export data. Please try again.';
             toast.error(message);
+        } finally {
+            setIsExporting(false);
         }
     };
     
@@ -269,9 +281,9 @@ export const Dashboard: React.FC = () => {
                 </div>
                 <div className="flex gap-3">
                     <button onClick={handleViewHistory} className="btn-secondary text-sm py-2">History</button>
-                    <button onClick={handleExport} className="btn-primary text-sm py-2 flex items-center shadow-primary/20">
-                        <ArrowUpRight size={16} className="mr-2" />
-                        Export Data
+                    <button onClick={handleExport} disabled={isExporting || isLoading} className="btn-primary text-sm py-2 flex items-center shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed">
+                        {isExporting ? <Loader2 size={16} className="mr-2 animate-spin" /> : <ArrowUpRight size={16} className="mr-2" />}
+                        {isExporting ? 'Exporting...' : 'Export Data'}
                     </button>
                 </div>
             </header>
@@ -293,12 +305,10 @@ export const Dashboard: React.FC = () => {
                 <div ref={leftColRef} className="md:col-span-8 flex flex-col gap-6 h-full">
                     
                     {/* Top Stats Row */}
-                    {/* Top Stats Row */}
-                    <StatsCards stats={stats} />
+                    {isLoading ? <StatsSkeleton /> : <StatsCards stats={stats} />}
 
                     {/* Chart Section */}
-                    {/* Chart Section */}
-                    <ActivityChart data={chartData} />
+                    {isLoading ? <ChartSkeleton /> : <ActivityChart data={chartData} />}
 
                     {/* Analytics Row (Pie & PRs) */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

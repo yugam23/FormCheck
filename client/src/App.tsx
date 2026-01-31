@@ -9,17 +9,21 @@ const HomeView = lazy(() => import('@/components/HomeView'));
 const WorkoutView = lazy(() => import('@/components/WorkoutView'));
 const Dashboard = lazy(() => import('@/components/Dashboard'));
 
+import { ToastProvider } from '@/components/ui/Toast';
+
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route element={<MainLayout />}>
-          <Route path="/" element={<Suspense fallback={<LoadingFallback />}><HomeView /></Suspense>} />
-          <Route path="/workout" element={<Suspense fallback={<LoadingFallback />}><WorkoutView /></Suspense>} />
-          <Route path="/dashboard" element={<Suspense fallback={<LoadingFallback />}><Dashboard /></Suspense>} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <ToastProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<Suspense fallback={<LoadingFallback />}><HomeView /></Suspense>} />
+            <Route path="/workout" element={<Suspense fallback={<LoadingFallback />}><WorkoutView /></Suspense>} />
+            <Route path="/dashboard" element={<Suspense fallback={<LoadingFallback />}><Dashboard /></Suspense>} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </ToastProvider>
   );
 }
 

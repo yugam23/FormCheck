@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Trophy } from 'lucide-react';
+import { useToast } from '../ui/Toast';
 
 /**
  * Props for the WeeklyGoal component.
@@ -20,12 +21,16 @@ interface WeeklyGoalProps {
  * @param props - Component props containing goal data and update handler
  */
 export const WeeklyGoal: React.FC<WeeklyGoalProps> = ({ currentReps, goal, onUpdateGoal }) => {
+    const toast = useToast();
     const [isEditing, setIsEditing] = useState(false);
     const [inputValue, setInputValue] = useState(goal.toString());
 
     const handleSave = async () => {
         const val = parseInt(inputValue);
-        if (isNaN(val) || val <= 0) return alert("Invalid Goal");
+        if (isNaN(val) || val <= 0) {
+            toast.warning("Goal must be a positive number.");
+            return;
+        }
         await onUpdateGoal(val);
         setIsEditing(false);
     };

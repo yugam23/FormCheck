@@ -3,6 +3,18 @@ import { Activity } from 'lucide-react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';
 
+/**
+ * Main application layout wrapper.
+ * Provides the persistent navigation bar and ambient background effects.
+ * Renders child routes via `Outlet`.
+ *
+ * @example
+ * ```tsx
+ * <Route element={<MainLayout />}>
+ *   <Route path="/" element={<HomeView />} />
+ * </Route>
+ * ```
+ */
 const MainLayout = () => {
     const location = useLocation();
     const currentPath = location.pathname;

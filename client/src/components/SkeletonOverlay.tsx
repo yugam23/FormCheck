@@ -2,12 +2,25 @@
 import { useRef, useEffect } from 'react';
 import type { PoseData } from '../types';
 
+/**
+ * Props for the SkeletonOverlay component.
+ */
 interface SkeletonOverlayProps {
+    /** detected pose data containing landmarks and feedback */
     poseData: PoseData | null;
+    /** overlay width matching video feed */
     width: number;
+    /** overlay height matching video feed */
     height: number;
 }
 
+/**
+ * Standard implementation of the skeletal overlay.
+ * Uses MediaPipe landmarks to draw the user's stick-figure representation.
+ * Changes color based on feedback (Green = Good, Red = Bad).
+ *
+ * @param props - Component props
+ */
 const CONNECTIONS = [
     [11, 12], [11, 13], [13, 15], [12, 14], [14, 16], // Upper body
     [11, 23], [12, 24], // Torso

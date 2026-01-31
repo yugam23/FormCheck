@@ -13,7 +13,23 @@ import { HistoryModal } from './dashboard/HistoryModal';
 
 const API_URL = 'http://localhost:8000';
 
-const Dashboard = () => {
+/**
+ * Dashboard main view displaying workout analytics and statistics.
+ *
+ * Features:
+ * - Real-time session tracking with live updates
+ * - 7-day activity charts (ActivityChart)
+ * - Exercise distribution analytics (DistributionChart)
+ * - Personal records tracking (PersonalRecords)
+ * - Weekly goal progress with editable target (WeeklyGoal)
+ * - Recent activity feed and full history management
+ *
+ * @example
+ * ```tsx
+ * <Dashboard />
+ * ```
+ */
+export const Dashboard: React.FC = () => {
     const [sessions, setSessions] = useState<Session[]>([]);
     const [stats, setStats] = useState({
         totalSessions: 0,

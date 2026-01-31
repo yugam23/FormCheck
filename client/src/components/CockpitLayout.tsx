@@ -5,6 +5,15 @@ import { Sidebar } from './Sidebar';
 import { VideoFeed } from './VideoFeed';
 import { OverlayCanvas } from './OverlayCanvas';
 
+/**
+ * Experimental immersive layout for the "Cockpit" mode.
+ * Features a futuristic UI overlaid on the video feed.
+ *
+ * @example
+ * ```tsx
+ * <CockpitLayout />
+ * ```
+ */
 export function CockpitLayout() {
   const { readyState, lastMessage } = useSocketStore();
   

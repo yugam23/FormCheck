@@ -8,6 +8,15 @@ const VIDEO_WIDTH = 480; // Reduced from 640 for speed
 const VIDEO_HEIGHT = 360; // Reduced from 480
 const FRAME_RATE = 12; // Cap at 12 FPS for stability
 
+/**
+ * Bare-bones video feed component for the CockpitLayout.
+ * handles webcam access and frame transmission independently.
+ *
+ * @example
+ * ```tsx
+ * <VideoFeed />
+ * ```
+ */
 export function VideoFeed() {
   const webcamRef = useRef<Webcam>(null);
   const { sendMessage, readyState } = useWebSocket('ws://localhost:8000/ws', { share: true });

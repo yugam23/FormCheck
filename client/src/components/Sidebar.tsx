@@ -1,10 +1,20 @@
 import { Activity, Settings, Video, LogOut } from 'lucide-react';
 import clsx from 'clsx';
 
+/**
+ * Props for the Sidebar component.
+ */
 interface SidebarProps {
+  /** Whether the sidebar is currently active/visible */
   active?: boolean;
 }
 
+/**
+ * Sidebar navigation component for the application.
+ * Contains navigation links and mode selection controls.
+ *
+ * @param props - Component props
+ */
 export function Sidebar({ active = false }: SidebarProps) {
   return (
     <aside className="w-[280px] bg-base/95 backdrop-blur-md border-r border-border h-screen flex flex-col p-6 z-20 shadow-2xl">

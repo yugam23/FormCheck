@@ -1,5 +1,16 @@
 import { Activity } from 'lucide-react';
 
+/**
+ * Full-screen loading indicator with animated pulsing effect.
+ * Used during route transitions (Suspense fallback) or initial app load.
+ *
+ * @example
+ * ```tsx
+ * <Suspense fallback={<LoadingFallback />}>
+ *   <Component />
+ * </Suspense>
+ * ```
+ */
 const LoadingFallback = () => {
     return (
         <div className="flex items-center justify-center min-h-[50vh] w-full">

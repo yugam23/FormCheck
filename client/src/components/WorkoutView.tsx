@@ -11,6 +11,21 @@ import { handleApiResponse, ApiError } from '../lib/errorHandler';
 
 const API_URL = 'http://localhost:8000';
 
+/**
+ * Main workout view that orchestrates the real-time exercise session.
+ *
+ * Responsibilities:
+ * - Manages WebSocket connection state via WebcamCapture
+ * - Handles session timer and lifecycle (Start/End)
+ * - Coordinates voice feedback (useVoiceFeedback)
+ * - Displays real-time stats (StatsPanel)
+ * - Saves session data to backend on completion
+ *
+ * @example
+ * ```tsx
+ * <WorkoutView />
+ * ```
+ */
 const WorkoutView = () => {
     const location = useLocation();
     const navigate = useNavigate();

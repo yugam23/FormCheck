@@ -2,12 +2,23 @@ import React from 'react';
 import { Trash2, Dumbbell } from 'lucide-react';
 import type { Session } from '../../types';
 
+/**
+ * Props for the SessionCard component.
+ */
 interface SessionCardProps {
     session: Session;
+    /** Callback function to handle session deletion */
     onDelete?: (id: number) => void;
+    /** Display variant: 'compact' for sidebars, 'detailed' for main lists */
     variant?: 'compact' | 'detailed';
 }
 
+/**
+ * Displays a single workout session's details.
+ * Supports a compact view for sidebars and a detailed view for history lists.
+ *
+ * @param props - Component props
+ */
 export const SessionCard: React.FC<SessionCardProps> = ({
     session,
     onDelete,

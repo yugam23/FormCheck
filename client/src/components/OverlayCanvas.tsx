@@ -7,10 +7,16 @@ interface Landmark {
   visibility: number;
 }
 
+/**
+ * Props for the OverlayCanvas component.
+ */
 interface OverlayCanvasProps {
-  landmarks: Landmark[] | null;
-  width?: number;
-  height?: number;
+    /** Array of detected landmarks (keypoints) */
+    landmarks: Landmark[] | null;
+    /** Canvas width in pixels */
+    width?: number;
+    /** Canvas height in pixels */
+    height?: number;
 }
 
 const CONNECTIONS = [
@@ -23,6 +29,12 @@ const CONNECTIONS = [
   [24, 26], [26, 28]  // Right Leg
 ];
 
+/**
+ * Renders the skeletal wireframe overlay on top of the video feed.
+ * Draws lines connecting recognized body landmarks.
+ *
+ * @param props - Component props containing landmark data
+ */
 export function OverlayCanvas({ landmarks, width = 640, height = 480 }: OverlayCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 

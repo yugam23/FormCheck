@@ -2,10 +2,20 @@ import React from 'react';
 import { Medal } from 'lucide-react';
 import { formatMetric } from '../../lib/formatters';
 
+/**
+ * Props for the PersonalRecords component.
+ */
 interface PersonalRecordsProps {
+    /** Array of personal record objects (exercise name and max reps) */
     prs: { exercise: string; reps: number }[];
 }
 
+/**
+ * Displays a list of personal records (PRs) for each exercise.
+ * Formats metrics dynamically based on exercise type (time vs reps).
+ *
+ * @param props - Component props containing PR data
+ */
 export const PersonalRecords: React.FC<PersonalRecordsProps> = ({ prs }) => {
     return (
         <div className="glass-panel p-6 rounded-3xl">

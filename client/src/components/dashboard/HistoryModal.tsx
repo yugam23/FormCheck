@@ -3,14 +3,28 @@ import { X, Trash2 } from 'lucide-react';
 import { SessionCard } from './SessionCard';
 import type { Session } from '../../types';
 
+/**
+ * Props for the HistoryModal component.
+ */
 interface HistoryModalProps {
+    /** Whether the modal is currently open */
     isOpen: boolean;
+    /** Callback to close the modal */
     onClose: () => void;
+    /** Array of all workout sessions */
     sessions: Session[];
+    /** Async callback to delete a specific session */
     onDeleteSession: (id: number) => Promise<void>;
+    /** Async callback to clear all history */
     onClearHistory: () => Promise<void>;
 }
 
+/**
+ * Modal dialog for viewing and managing complete workout history.
+ * Displays detailed session cards and provides deletion controls.
+ *
+ * @param props - Component props containing modal state and handlers
+ */
 export const HistoryModal: React.FC<HistoryModalProps> = ({ 
     isOpen, 
     onClose, 

@@ -2,11 +2,21 @@ import React from 'react';
 import { PieChart as PieIcon } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
+/**
+ * Props for the DistributionChart component.
+ */
 interface DistributionChartProps {
+    /** Array of distribution data objects (name: exercise, value: percentage/count) */
     data: { name: string; value: number }[];
+    /** Array of color strings for the pie segments */
     colors: string[];
 }
 
+/**
+ * Renders a pie chart showing the distribution of exercises performed.
+ *
+ * @param props - Component props containing data and color palette
+ */
 export const DistributionChart: React.FC<DistributionChartProps> = ({ data, colors }) => {
     return (
         <div className="glass-panel p-6 rounded-3xl min-h-[300px] flex flex-col">

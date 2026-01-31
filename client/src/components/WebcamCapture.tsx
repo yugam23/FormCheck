@@ -5,18 +5,37 @@ import SkeletonOverlay from './SkeletonOverlay';
 import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import type { PoseData } from '../types';
 
-interface WebcamCaptureProps {
-    activeExercise?: string;
-    onConnectionStatus?: (status: string) => void;
-    onPoseDataUpdate?: (data: PoseData | null) => void;
-    poseData: PoseData | null;
-    sessionActive?: boolean;
-}
-
 const VIDEO_WIDTH = 640;
 const VIDEO_HEIGHT = 480;
 const FRAME_RATE = 15;
 
+/**
+ * Props for the WebcamCapture component.
+ */
+interface WebcamCaptureProps {
+    /** Name of the active exercise for backend configuration */
+    activeExercise?: string;
+    /** Callback for WebSocket connection status updates */
+    onConnectionStatus?: (status: string) => void;
+    /** Callback for receiving pose detection data */
+    onPoseDataUpdate?: (data: PoseData | null) => void;
+    /** Current pose data for overlay synchronization */
+    poseData: PoseData | null;
+    /** Flag indicating if a workout session is currently active */
+    sessionActive?: boolean;
+}
+
+/**
+ * Handles webcam stream, video frame processing, and WebSocket communication.
+ *
+ * Features:
+ * - Captures video frames at 15 FPS
+ * - Sends JPEG compressed frames to backend via WebSocket
+ * - Receives and parses pose detection results
+ * - Renders skeleton overlay synchronized with video
+ *
+ * @param props - Component props
+ */
 const WebcamCapture = ({ activeExercise = 'Pushups', onConnectionStatus, onPoseDataUpdate, poseData, sessionActive = false }: WebcamCaptureProps) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);

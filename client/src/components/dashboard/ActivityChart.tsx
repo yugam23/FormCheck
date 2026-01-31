@@ -7,10 +7,20 @@ export interface ChartDataPoint {
     reps: number;
 }
 
+/**
+ * Props for the ActivityChart component.
+ */
 interface ActivityChartProps {
+    /** Array of data points for the area chart */
     data: ChartDataPoint[];
 }
 
+/**
+ * Renders a weekly activity area chart visualizing reps over time.
+ * Includes a tooltip and gradient fill for visual appeal.
+ *
+ * @param props - Component props containing chart data
+ */
 export const ActivityChart: React.FC<ActivityChartProps> = ({ data }) => {
     return (
         <div className="glass-panel p-6 rounded-3xl min-h-[350px]">

@@ -1,12 +1,24 @@
 import React, { useState } from 'react';
 import { Trophy } from 'lucide-react';
 
+/**
+ * Props for the WeeklyGoal component.
+ */
 interface WeeklyGoalProps {
+    /** Current number of reps completed this week */
     currentReps: number;
+    /** Target number of reps for the week */
     goal: number;
+    /** Async callback to update the weekly goal */
     onUpdateGoal: (newGoal: number) => Promise<void>;
 }
 
+/**
+ * Displays weekly goal progress with a circular progress indicator.
+ * Allows the user to edit their weekly goal target.
+ *
+ * @param props - Component props containing goal data and update handler
+ */
 export const WeeklyGoal: React.FC<WeeklyGoalProps> = ({ currentReps, goal, onUpdateGoal }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [inputValue, setInputValue] = useState(goal.toString());

@@ -4,6 +4,20 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
 
+/**
+ * Home view displaying the exercise selection grid.
+ *
+ * Features:
+ * - Hero section with marketing copy
+ * - Feature highlights (Real-time tracking, Instant feedback)
+ * - Interactive exercise cards with gradients and hover effects
+ * - Navigation to specific workout sessions
+ *
+ * @example
+ * ```tsx
+ * <HomeView />
+ * ```
+ */
 const HomeView = () => {
     const navigate = useNavigate();
     const [showAll, setShowAll] = useState(false);

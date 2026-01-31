@@ -1,6 +1,9 @@
 import React from 'react';
 import { TrendingUp, Dumbbell, Calendar, Trophy } from 'lucide-react';
 
+/**
+ * Props for the StatsCards component.
+ */
 interface StatsCardsProps {
     stats: {
         totalSessions: number;
@@ -9,6 +12,12 @@ interface StatsCardsProps {
     };
 }
 
+/**
+ * Component to display high-level statistics: Total Reps, Total Sessions, and Day Streak.
+ * Uses a bento-grid style layout.
+ *
+ * @param props - Component props containing stats data
+ */
 export const StatsCards: React.FC<StatsCardsProps> = ({ stats }) => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">

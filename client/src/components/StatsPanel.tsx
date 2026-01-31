@@ -2,14 +2,28 @@ import { Timer, Activity, Zap } from 'lucide-react';
 import { cn } from '../lib/utils';
 import type { RepData, FeedbackData } from '../types';
 
+/**
+ * Props for the StatsPanel component.
+ */
 interface StatsPanelProps {
+    /** Real-time repetition data and form scores */
     repData?: RepData;
+    /** AI feedback message and status color */
     feedback?: FeedbackData;
+    /** Current session duration in seconds */
     sessionTime: number;
+    /** Optional CSS class overrides */
     className?: string;
+    /** Name of the current exercise */
     exerciseName: string;
 }
 
+/**
+ * Heads-Up Display (HUD) panel for workout metrics.
+ * Displays Rep Count, Form Quality Score, and Session Timer in a bento-grid layout.
+ *
+ * @param props - Component props
+ */
 const StatsPanel = ({ repData, feedback, sessionTime, className, exerciseName }: StatsPanelProps) => {
     // Format time mm:ss
     const formatTime = (seconds: number) => {

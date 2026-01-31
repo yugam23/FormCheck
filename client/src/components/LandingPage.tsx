@@ -1,6 +1,20 @@
 import { ArrowRight, Activity, TrendingUp, Zap, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+/**
+ * Marketing landing page for the FormCheck application.
+ *
+ * Sections:
+ * - Header/Navigation
+ * - Hero with call-to-action
+ * - Feature highlights grid
+ * - Product benefits and technological overview
+ *
+ * @example
+ * ```tsx
+ * <LandingPage />
+ * ```
+ */
 export function LandingPage() {
   const navigate = useNavigate();
 

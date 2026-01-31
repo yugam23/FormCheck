@@ -3,12 +3,24 @@ import { Clock, Trash2 } from 'lucide-react';
 import { SessionCard } from './SessionCard';
 import type { Session } from '../../types';
 
+/**
+ * Props for the RecentActivity component.
+ */
 interface RecentActivityProps {
+    /** Array of recent workout sessions */
     sessions: Session[];
+    /** Callback to delete a specific session */
     onDeleteSession: (id: number) => void;
+    /** Callback to clear all history */
     onClearHistory: () => void;
 }
 
+/**
+ * Sidebar component displaying a list of recent workout activities.
+ * Provides options to delete individual sessions or clear all history.
+ *
+ * @param props - Component props containing sessions and handlers
+ */
 export const RecentActivity: React.FC<RecentActivityProps> = ({ sessions, onDeleteSession, onClearHistory }) => {
     return (
         <div className="glass-panel p-6 rounded-3xl flex-1 flex flex-col min-h-0">

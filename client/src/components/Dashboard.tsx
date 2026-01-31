@@ -4,6 +4,21 @@ import { useToast } from './ui/Toast';
 import { useEffect, useState, useRef, useLayoutEffect, useCallback, useMemo } from 'react';
 import type { Session } from '../types';
 import { ApiError, handleApiResponse } from '../lib/errorHandler';
+
+interface StatsResponse {
+    total_sessions: number;
+    total_reps: number;
+    day_streak: number;
+}
+
+interface AnalyticsResponse {
+    distribution: { name: string; value: number }[];
+    prs: { exercise: string; reps: number }[];
+}
+
+interface GoalResponse {
+    goal: number;
+}
 import { StatsCards } from './dashboard/StatsCards';
 import { ActivityChart } from './dashboard/ActivityChart';
 import { DistributionChart } from './dashboard/DistributionChart';
@@ -13,6 +28,7 @@ import { RecentActivity } from './dashboard/RecentActivity';
 import { HistoryModal } from './dashboard/HistoryModal';
 import { StatsSkeleton, ChartSkeleton } from './ui/Skeleton';
 import { Loader2 } from 'lucide-react';
+import { useFetch } from '../hooks/useFetch';
 
 import { API_URL, DEFAULT_WEEKLY_GOAL } from '../lib/constants';
 
@@ -34,24 +50,69 @@ import { API_URL, DEFAULT_WEEKLY_GOAL } from '../lib/constants';
  */
 export const Dashboard: React.FC = () => {
     const toast = useToast();
-    const [sessions, setSessions] = useState<Session[]>([]);
-    const [stats, setStats] = useState({
-        totalSessions: 0,
-        totalReps: 0,
-        dayStreak: 0,
-    });
+    
+    // Data Fetching
+    const { 
+        data: sessionsData, 
+        loading: loadingSessions, 
+        error: errorSessions, 
+        refetch: refetchSessions 
+    } = useFetch<Session[]>(`${API_URL}/api/sessions`);
 
+    const { 
+        data: statsData, 
+        loading: loadingStats, 
+        error: errorStats,
+        refetch: refetchStats 
+    } = useFetch<StatsResponse>(`${API_URL}/api/stats`);
 
-    const [analytics, setAnalytics] = useState<{
-        distribution: { name: string; value: number }[];
-        prs: { exercise: string; reps: number }[];
-    }>({ distribution: [], prs: [] });
+    const {
+        data: analyticsData,
+        loading: loadingAnalytics,
+        error: errorAnalytics,
+        refetch: refetchAnalytics
+    } = useFetch<AnalyticsResponse>(`${API_URL}/api/analytics`);
+
+    const {
+        data: goalData,
+        loading: loadingGoal,
+        error: errorGoal,
+        refetch: refetchGoal
+    } = useFetch<GoalResponse>(`${API_URL}/api/settings/goal`);
+
+    // Derived State
+    const sessions = useMemo(() => sessionsData || [], [sessionsData]);
+    const stats = useMemo(() => ({
+        totalSessions: statsData?.total_sessions || 0,
+        totalReps: statsData?.total_reps || 0,
+        dayStreak: statsData?.day_streak || 0,
+    }), [statsData]);
+    const analytics = useMemo(() => analyticsData || { distribution: [], prs: [] }, [analyticsData]);
+    
+    // Local goal state for updates
     const [goal, setGoal] = useState(DEFAULT_WEEKLY_GOAL);
     
+    // Sync goal from server
+    useEffect(() => {
+        if (goalData) setGoal(goalData.goal);
+    }, [goalData]);
+
     const [showHistory, setShowHistory] = useState(false);
-    const [historySessions, setHistorySessions] = useState<Session[]>([]);
-    const [error, setError] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    // Use useFetch for history (lazy load)
+    const {
+         data: historySessionsData,
+         refetch: fetchHistory
+    } = useFetch<Session[]>(`${API_URL}/api/sessions?limit=-1`, { immediate: false });
+    
+    // Combined Loading & Error State
+    const isLoading = loadingSessions || loadingStats || loadingAnalytics || loadingGoal;
+    const [manualError, setManualError] = useState<string | null>(null);
+    const error = manualError || 
+        (errorSessions?.message ? `Sessions: ${errorSessions.message}` : null) ||
+        (errorStats?.message ? `Stats: ${errorStats.message}` : null) ||
+        (errorAnalytics?.message ? `Analytics: ${errorAnalytics.message}` : null) ||
+        (errorGoal?.message ? `Goal: ${errorGoal.message}` : null);
+    
     const [isExporting, setIsExporting] = useState(false);
 
     const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ec4899'];
@@ -83,52 +144,13 @@ export const Dashboard: React.FC = () => {
         }));
     }, [sessions]);
 
-    const refreshData = useCallback(async () => {
-        setIsLoading(true);
-        setError(null);
-        try {
-            // Fetch recent sessions for chart/feed
-            const sessionRes = await fetch(`${API_URL}/api/sessions`);
-            const sessionData = await handleApiResponse<Session[]>(sessionRes);
-            setSessions(sessionData);
-
-            // Fetch global stats (Totals + Streak)
-            const statsRes = await fetch(`${API_URL}/api/stats`);
-            const statsData = await handleApiResponse<{
-                total_sessions: number;
-                total_reps: number;
-                day_streak: number;
-            }>(statsRes);
-            
-            setStats({
-                totalSessions: statsData.total_sessions,
-                totalReps: statsData.total_reps,
-                dayStreak: statsData.day_streak
-            });
-
-            // Fetch Analytics
-            const analyticsRes = await fetch(`${API_URL}/api/analytics`);
-            const analyticsData = await handleApiResponse<{
-                distribution: { name: string; value: number }[];
-                prs: { exercise: string; reps: number }[];
-            }>(analyticsRes);
-            setAnalytics(analyticsData);
-
-            // Fetch Goal
-            const goalRes = await fetch(`${API_URL}/api/settings/goal`);
-            const goalData = await handleApiResponse<{ goal: number }>(goalRes);
-            setGoal(goalData.goal);
-
-        } catch (err) {
-            console.error("Error fetching dashboard data:", err);
-            const message = err instanceof ApiError 
-                ? `Failed to load data: ${err.message}`
-                : 'An unexpected error occurred while loading dashboard data.';
-            setError(message);
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
+    const refreshData = useCallback(() => {
+        setManualError(null);
+        refetchSessions();
+        refetchStats();
+        refetchAnalytics();
+        refetchGoal();
+    }, [refetchSessions, refetchStats, refetchAnalytics, refetchGoal]);
 
     useEffect(() => {
         refreshData();
@@ -229,8 +251,8 @@ export const Dashboard: React.FC = () => {
         try {
             const res = await fetch(`${API_URL}/api/sessions`, { method: 'DELETE' });
             await handleApiResponse(res);
+            fetchHistory(); // Refetch history
             refreshData();
-            setHistorySessions([]);
             toast.success("History cleared successfully");
         } catch (err) {
             console.error("Error clearing history:", err);
@@ -243,7 +265,7 @@ export const Dashboard: React.FC = () => {
         try {
             const res = await fetch(`${API_URL}/api/sessions/${id}`, { method: 'DELETE' });
             await handleApiResponse(res);
-            setHistorySessions(prev => prev.filter(s => s.id !== id));
+            fetchHistory(); // Refetch history
             refreshData();
             toast.success("Session deleted successfully");
         } catch (err) {
@@ -252,17 +274,9 @@ export const Dashboard: React.FC = () => {
         }
     };
 
-    const handleViewHistory = async () => {
-        try {
-            const res = await fetch(`${API_URL}/api/sessions?limit=-1`);
-            const data = await handleApiResponse<Session[]>(res);
-            setHistorySessions(data);
-            setShowHistory(true);
-        } catch (err) {
-            console.error("Error fetching history:", err);
-            const message = err instanceof ApiError ? err.message : 'Failed to fetch history';
-            setError(message);
-        }
+    const handleViewHistory = () => {
+        fetchHistory();
+        setShowHistory(true);
     };
 
     // Format time helper reuse/move out if commonly used
@@ -289,7 +303,7 @@ export const Dashboard: React.FC = () => {
                 <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl flex items-center gap-3 animate-fade-in">
                     <AlertCircle size={20} />
                     <p>{error}</p>
-                    <button onClick={() => setError(null)} className="ml-auto hover:bg-white/10 p-1 rounded-lg">
+                    <button onClick={() => setManualError(null)} className="ml-auto hover:bg-white/10 p-1 rounded-lg">
                         <X size={16} />
                     </button>
                 </div>
@@ -342,7 +356,7 @@ export const Dashboard: React.FC = () => {
             <HistoryModal 
                 isOpen={showHistory} 
                 onClose={() => setShowHistory(false)} 
-                sessions={historySessions} 
+                sessions={historySessionsData || []} 
                 onDeleteSession={handleDeleteHistorySession} 
                 onClearHistory={handleClearHistory} 
             />

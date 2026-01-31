@@ -5,9 +5,7 @@ import SkeletonOverlay from './SkeletonOverlay';
 import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import type { PoseData } from '../types';
 
-const VIDEO_WIDTH = 640;
-const VIDEO_HEIGHT = 480;
-const FRAME_RATE = 15;
+import { VIDEO_WIDTH, VIDEO_HEIGHT, FRAME_RATE } from '../lib/constants';
 
 /**
  * Props for the WebcamCapture component.

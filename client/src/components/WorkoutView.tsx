@@ -10,7 +10,7 @@ import { cn } from '../lib/utils';
 import type { PoseData } from '../types';
 import { handleApiResponse, ApiError } from '../lib/errorHandler';
 
-const API_URL = 'http://localhost:8000';
+import { API_URL } from '../lib/constants';
 
 /**
  * Main workout view that orchestrates the real-time exercise session.

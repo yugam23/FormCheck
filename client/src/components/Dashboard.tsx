@@ -12,7 +12,7 @@ import { WeeklyGoal } from './dashboard/WeeklyGoal';
 import { RecentActivity } from './dashboard/RecentActivity';
 import { HistoryModal } from './dashboard/HistoryModal';
 
-const API_URL = 'http://localhost:8000';
+import { API_URL, DEFAULT_WEEKLY_GOAL } from '../lib/constants';
 
 /**
  * Dashboard main view displaying workout analytics and statistics.
@@ -44,7 +44,7 @@ export const Dashboard: React.FC = () => {
         distribution: { name: string; value: number }[];
         prs: { exercise: string; reps: number }[];
     }>({ distribution: [], prs: [] });
-    const [goal, setGoal] = useState(500);
+    const [goal, setGoal] = useState(DEFAULT_WEEKLY_GOAL);
     
     const [showHistory, setShowHistory] = useState(false);
     const [historySessions, setHistorySessions] = useState<Session[]>([]);

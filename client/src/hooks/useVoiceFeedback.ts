@@ -1,5 +1,6 @@
 
 import { useState, useCallback, useRef } from 'react';
+import { VOICE_THROTTLE_MS, VOICE_RATE, VOICE_PITCH, VOICE_VOLUME } from '../lib/constants';
 
 /**
  * Custom hook for voice feedback synthesis with throttling.
@@ -37,14 +38,14 @@ export const useVoiceFeedback = () => {
         const timeSinceLast = now - lastTimeRef.current;
         
         // If it's a new message, say it immediately
-        // If it's a repeat, wait at least 3 seconds
-        if (!isRepeat || timeSinceLast > 3000 || force) {
+        // If it's a repeat, wait at least VOICE_THROTTLE_MS
+        if (!isRepeat || timeSinceLast > VOICE_THROTTLE_MS || force) {
             window.speechSynthesis.cancel(); // Prioritize new message
             
             const utterance = new SpeechSynthesisUtterance(text.toLowerCase());
-            utterance.rate = 1.1; // Slightly faster
-            utterance.pitch = 1.0;
-            utterance.volume = 0.8;
+            utterance.rate = VOICE_RATE; // Slightly faster
+            utterance.pitch = VOICE_PITCH;
+            utterance.volume = VOICE_VOLUME;
             
             window.speechSynthesis.speak(utterance);
             

@@ -1,6 +1,6 @@
 // API Configuration
-export const API_URL = "http://localhost:8000";
-export const WS_URL = "ws://localhost:8000/ws";
+export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+export const WS_URL = import.meta.env.VITE_WS_URL || "ws://localhost:8000/ws";
 
 // Video Configuration
 export const VIDEO_WIDTH = 640;

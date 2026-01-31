@@ -4,11 +4,16 @@ import json
 import logging
 import time
 from typing import Dict, Any
+import os
+from dotenv import load_dotenv
 
 from app.core.pose_detector import PoseDetector
 from app.core.connection_manager import ConnectionManager
 from app.engine.exercises import get_strategy
 from app.database import db
+
+# Load environment variables
+load_dotenv()
 
 # Configure Logging
 logging.basicConfig(level=logging.INFO)
@@ -16,13 +21,24 @@ logger = logging.getLogger("FormCheck")
 
 app = FastAPI()
 
-# CORS
+# Environment-aware CORS configuration
+allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173")
+# Handle potential comma-separated list
+allowed_origins = [origin.strip() for origin in allowed_origins_str.split(",") if origin.strip()]
+
+# If no allowed origins specified but we are in dev, fallback to defaults or *
+environment = os.getenv("ENVIRONMENT", "development")
+if not allowed_origins and environment == "development":
+    allowed_origins = ["*"]
+
+logger.info(f"CORS Allowed Origins: {allowed_origins}")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "DELETE", "PATCH", "PUT"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 # Global Services

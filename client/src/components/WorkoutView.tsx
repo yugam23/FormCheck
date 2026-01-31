@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ChevronLeft, LogOut, Loader2 } from 'lucide-react';
 import { useVoiceFeedback } from '../hooks/useVoiceFeedback';
+import { useToast } from './ui/Toast';
 import WebcamCapture from './WebcamCapture';
 import StatsPanel from './StatsPanel';
 import { cn } from '../lib/utils';
@@ -27,6 +28,7 @@ const API_URL = 'http://localhost:8000';
  * ```
  */
 const WorkoutView = () => {
+    const toast = useToast();
     const location = useLocation();
     const navigate = useNavigate();
     const activeExercise = location.state?.exercise || 'Unknown Exercise';
@@ -103,7 +105,7 @@ const WorkoutView = () => {
             } catch (err) {
                 console.error("Failed to save session:", err);
                 const message = err instanceof ApiError ? err.message : "Failed to save workout data";
-                alert(message); // Temporary fallback for Phase 1
+                toast.error(message);
             } finally {
                 setIsSaving(false);
             }

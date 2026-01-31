@@ -1,5 +1,6 @@
 
 import { ArrowUpRight, AlertCircle, X } from 'lucide-react';
+import { useToast } from './ui/Toast';
 import { useEffect, useState, useRef, useLayoutEffect, useCallback } from 'react';
 import type { Session } from '../types';
 import { ApiError, handleApiResponse } from '../lib/errorHandler';
@@ -30,6 +31,7 @@ const API_URL = 'http://localhost:8000';
  * ```
  */
 export const Dashboard: React.FC = () => {
+    const toast = useToast();
     const [sessions, setSessions] = useState<Session[]>([]);
     const [stats, setStats] = useState({
         totalSessions: 0,
@@ -180,7 +182,7 @@ export const Dashboard: React.FC = () => {
             const message = err instanceof ApiError 
                 ? `Export failed: ${err.message}`
                 : 'Failed to export data. Please try again.';
-            alert(message); // Using alert until Toast system is implemented in Phase 5
+            toast.error(message);
         }
     };
     
@@ -193,9 +195,10 @@ export const Dashboard: React.FC = () => {
              });
              await handleApiResponse(res);
              setGoal(g);
+             toast.success("Weekly goal updated!");
         } catch (e) {
             console.error(e);
-            alert("Failed to update goal");
+            toast.error("Failed to update goal");
         }
     };
 
@@ -205,9 +208,10 @@ export const Dashboard: React.FC = () => {
             const res = await fetch(`${API_URL}/api/sessions/${id}`, { method: 'DELETE' });
             await handleApiResponse(res);
             refreshData();
+            toast.success("Session deleted successfully");
         } catch (err) {
             console.error("Error deleting session:", err);
-            alert("Failed to delete session");
+            toast.error("Failed to delete session");
         }
     };
 
@@ -218,9 +222,10 @@ export const Dashboard: React.FC = () => {
             await handleApiResponse(res);
             refreshData();
             setHistorySessions([]);
+            toast.success("History cleared successfully");
         } catch (err) {
             console.error("Error clearing history:", err);
-            alert("Failed to clear history");
+            toast.error("Failed to clear history");
         }
     };
 
@@ -231,9 +236,10 @@ export const Dashboard: React.FC = () => {
             await handleApiResponse(res);
             setHistorySessions(prev => prev.filter(s => s.id !== id));
             refreshData();
+            toast.success("Session deleted successfully");
         } catch (err) {
             console.error("Error deleting session:", err);
-            alert("Failed to delete session");
+            toast.error("Failed to delete session");
         }
     };
 

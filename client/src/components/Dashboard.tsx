@@ -159,29 +159,33 @@ export const Dashboard: React.FC = () => {
 
     // Sync heights
     useLayoutEffect(() => {
-        const updateHeight = () => {
-            if (window.innerWidth >= 768 && leftColRef.current) {
-                setRightColHeight(leftColRef.current.offsetHeight);
-            } else {
-                setRightColHeight(undefined);
+        try {
+            const updateHeight = () => {
+                if (window.innerWidth >= 768 && leftColRef.current) {
+                    setRightColHeight(leftColRef.current.offsetHeight);
+                } else {
+                    setRightColHeight(undefined);
+                }
+            };
+
+            const resizeObserver = new ResizeObserver(() => {
+                updateHeight();
+            });
+
+            if (leftColRef.current) {
+                resizeObserver.observe(leftColRef.current);
             }
-        };
+            
+            window.addEventListener('resize', updateHeight);
+            updateHeight(); // Call once immediately
 
-        const resizeObserver = new ResizeObserver(() => {
-            updateHeight();
-        });
-
-        if (leftColRef.current) {
-            resizeObserver.observe(leftColRef.current);
+            return () => {
+                 resizeObserver.disconnect();
+                 window.removeEventListener('resize', updateHeight);
+            };
+        } catch (e) {
+            console.error("Layout effect error:", e);
         }
-        
-        window.addEventListener('resize', updateHeight);
-        updateHeight(); // Call once immediately
-
-        return () => {
-             resizeObserver.disconnect();
-             window.removeEventListener('resize', updateHeight);
-        };
     }, [stats, chartData, analytics]); // Re-setup if data structure radically changes, but ResizeObserver handles size changes
 
     const handleExport = async () => {

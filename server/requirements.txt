@@ -9,3 +9,5 @@ python-multipart
 ruff
 black
 opencv-python-headless
+pytest
+httpx

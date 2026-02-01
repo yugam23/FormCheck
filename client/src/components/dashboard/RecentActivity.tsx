@@ -1,6 +1,7 @@
 import React from 'react';
 import { Clock, Trash2 } from 'lucide-react';
 import { SessionCard } from './SessionCard';
+import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
 import type { Session } from '../../types';
 
 /**
@@ -23,12 +24,14 @@ interface RecentActivityProps {
  */
 export const RecentActivity = React.memo<RecentActivityProps>(({ sessions, onDeleteSession, onClearHistory }) => {
     return (
-        <div className="glass-panel p-6 rounded-3xl flex-1 flex flex-col min-h-0">
-            <h3 className="font-bold text-lg mb-6 flex items-center">
-                <Clock size={20} className="mr-2 text-muted-foreground" />
-                Recent Activity
-            </h3>
-            <div className="space-y-3 overflow-y-auto pr-2 custom-scrollbar flex-1">
+        <Card className="flex-1 flex flex-col min-h-0">
+            <CardHeader className="mb-6">
+                <CardTitle>
+                    <Clock size={20} className="mr-2 text-muted-foreground" />
+                    Recent Activity
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 overflow-y-auto pr-2 custom-scrollbar flex-1">
                 {sessions.length === 0 ? (
                     <div className="text-center text-muted-foreground text-sm py-12 flex flex-col items-center opacity-50">
                         <Clock size={32} className="mb-3 opacity-20" />
@@ -42,7 +45,7 @@ export const RecentActivity = React.memo<RecentActivityProps>(({ sessions, onDel
                         variant="compact"
                     />
                 ))}
-            </div>
+            </CardContent>
             <button
                 onClick={onClearHistory}
                 className="w-full mt-6 text-xs font-medium text-center text-muted-foreground hover:text-red-400 transition-colors flex items-center justify-center gap-2 py-3 hover:bg-white/5 rounded-xl"
@@ -50,6 +53,6 @@ export const RecentActivity = React.memo<RecentActivityProps>(({ sessions, onDel
                 <Trash2 size={14} />
                 Clear History
             </button>
-        </div>
+        </Card>
     );
 });

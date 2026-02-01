@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Trophy } from 'lucide-react';
 import { useToast } from '../ui/Toast';
+import { Card } from '../ui/Card';
 
 /**
  * Props for the WeeklyGoal component.
@@ -36,7 +37,7 @@ export const WeeklyGoal = React.memo<WeeklyGoalProps>(({ currentReps, goal, onUp
     };
 
     return (
-        <div className="glass-panel p-8 rounded-3xl flex flex-col items-center justify-center relative bg-gradient-to-br from-white/5 to-white/[0.02]">
+        <Card className="p-8 flex flex-col items-center justify-center relative bg-gradient-to-br from-white/5 to-white/[0.02]">
             <div className="w-full flex justify-between items-center mb-4 absolute top-6 px-6">
                 <h3 className="font-bold text-lg flex items-center">
                     <Trophy size={18} className="mr-2 text-primary" />
@@ -101,6 +102,6 @@ export const WeeklyGoal = React.memo<WeeklyGoalProps>(({ currentReps, goal, onUp
             <p className="text-xs text-muted-foreground/50 mt-4 text-center max-w-[200px] leading-relaxed">
                 Keep pushing! You're making close to your weekly target.
             </p>
-        </div>
+        </Card>
     );
 });

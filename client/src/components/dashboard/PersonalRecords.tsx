@@ -1,6 +1,7 @@
 import React from 'react';
 import { Medal } from 'lucide-react';
 import { formatMetric } from '../../lib/formatters';
+import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
 
 /**
  * Props for the PersonalRecords component.
@@ -18,12 +19,14 @@ interface PersonalRecordsProps {
  */
 export const PersonalRecords = React.memo<PersonalRecordsProps>(({ prs }) => {
     return (
-        <div className="glass-panel p-6 rounded-3xl">
-                <h3 className="font-bold text-lg mb-6 flex items-center">
-                <Medal size={20} className="mr-2 text-amber-400" />
-                Personal Records
-            </h3>
-            <div className="space-y-3">
+        <Card>
+            <CardHeader className="mb-6">
+                <CardTitle>
+                    <Medal size={20} className="mr-2 text-amber-400" />
+                    Personal Records
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
                 {prs.map((pr, i) => {
                     const metric = formatMetric(pr.exercise, pr.reps);
                     return (
@@ -41,7 +44,7 @@ export const PersonalRecords = React.memo<PersonalRecordsProps>(({ prs }) => {
                         No records yet
                     </div>
                 )}
-            </div>
-        </div>
+            </CardContent>
+        </Card>
     );
 });

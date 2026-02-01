@@ -1,6 +1,7 @@
 import React from 'react';
 import { PieChart as PieIcon } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
 
 /**
  * Props for the DistributionChart component.
@@ -19,12 +20,14 @@ interface DistributionChartProps {
  */
 export const DistributionChart = React.memo<DistributionChartProps>(({ data, colors }) => {
     return (
-        <div className="glass-panel p-6 rounded-3xl min-h-[300px] flex flex-col">
-            <h3 className="font-bold text-lg mb-6 flex items-center">
-                <PieIcon size={20} className="mr-2 text-primary" />
-                Distribution
-            </h3>
-            <div className="flex-1 w-full min-h-[200px]">
+        <Card className="min-h-[300px] flex flex-col">
+            <CardHeader className="mb-6">
+                <CardTitle>
+                    <PieIcon size={20} className="mr-2 text-primary" />
+                    Distribution
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 w-full min-h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                         <Pie
@@ -51,7 +54,7 @@ export const DistributionChart = React.memo<DistributionChartProps>(({ data, col
                         <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" />
                     </PieChart>
                 </ResponsiveContainer>
-            </div>
-        </div>
+            </CardContent>
+        </Card>
     );
 });

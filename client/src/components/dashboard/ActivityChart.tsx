@@ -1,6 +1,7 @@
 import React from 'react';
 import { Activity } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
 
 export interface ChartDataPoint {
     day: string;
@@ -23,15 +24,15 @@ interface ActivityChartProps {
  */
 export const ActivityChart = React.memo<ActivityChartProps>(({ data }) => {
     return (
-        <div className="glass-panel p-6 rounded-3xl min-h-[350px]">
-            <div className="flex justify-between items-center mb-6">
-                <h3 className="font-bold text-lg flex items-center">
+        <Card className="min-h-[350px]">
+            <CardHeader className="flex flex-row justify-between items-center mb-6">
+                <CardTitle>
                     <Activity size={20} className="mr-2 text-primary" />
                     Activity
-                </h3>
+                </CardTitle>
                 <button className="px-3 py-1 rounded-full bg-white/10 text-white text-xs font-medium">Weekly</button>
-            </div>
-            <div className="h-[280px] w-full">
+            </CardHeader>
+            <CardContent className="h-[280px] w-full p-0">
                 <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={data}>
                         <defs>
@@ -76,7 +77,7 @@ export const ActivityChart = React.memo<ActivityChartProps>(({ data }) => {
                         />
                     </AreaChart>
                 </ResponsiveContainer>
-            </div>
-        </div>
+            </CardContent>
+        </Card>
     );
 });

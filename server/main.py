@@ -79,7 +79,7 @@ def health_check(request: Request):
 
 @app.get("/api/sessions")
 @limiter.limit("60/minute")
-def get_sessions(request: Request, limit: int = Query(default=10, ge=1, le=100)):
+def get_sessions(request: Request, limit: int = Query(default=10, ge=-1, le=1000)):
     return db.get_recent_sessions(limit)
 
 

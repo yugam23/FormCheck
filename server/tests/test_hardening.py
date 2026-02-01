@@ -6,8 +6,8 @@ client = TestClient(app)
 
 
 def test_validation_limit_max():
-    # Limit <= 100
-    response = client.get("/api/sessions?limit=101")
+    # Limit <= 1000
+    response = client.get("/api/sessions?limit=1001")
     assert response.status_code == 422
     assert (
         "input_should_be_less_than_or_equal" in response.text
@@ -16,13 +16,19 @@ def test_validation_limit_max():
 
 
 def test_validation_limit_min():
-    # Limit >= 1
-    response = client.get("/api/sessions?limit=0")
+    # Limit >= -1
+    response = client.get("/api/sessions?limit=-2")
     assert response.status_code == 422
     assert (
         "input_should_be_greater_than_or_equal" in response.text
         or "greater_than_equal" in response.text
     )
+
+
+def test_validation_limit_all():
+    # Limit = -1 (All)
+    response = client.get("/api/sessions?limit=-1")
+    assert response.status_code == 200
 
 
 def test_rate_limiting():

@@ -75,8 +75,7 @@ export function useFetch<T>(url: string, options: UseFetchOptions = {}) {
         if (immediate) {
             fetchData();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [immediate]);
+    }, [immediate, fetchData]);
 
     return { ...state, refetch: fetchData };
 }

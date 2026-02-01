@@ -11,3 +11,6 @@ black
 opencv-python-headless
 pytest
 httpx
+
+slowapi
+structlog

@@ -28,7 +28,7 @@ allowed_origins = [origin.strip() for origin in allowed_origins_str.split(",") i
 
 # If no allowed origins specified but we are in dev, fallback to defaults or *
 environment = os.getenv("ENVIRONMENT", "development")
-if not allowed_origins and environment == "development":
+if environment == "development":
     allowed_origins = ["*"]
 
 logger.info(f"CORS Allowed Origins: {allowed_origins}")

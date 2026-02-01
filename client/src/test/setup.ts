@@ -1,8 +1,18 @@
-import "@testing-library/jest-dom";
-import { afterEach } from "vitest";
-import { cleanup } from "@testing-library/react";
+import '@testing-library/jest-dom';
+import { cleanup } from '@testing-library/react';
+import { afterEach, vi } from 'vitest';
 
-// Auto-cleanup after each test
 afterEach(() => {
-  cleanup();
+    cleanup();
 });
+
+// Mock ResizeObserver
+globalThis.ResizeObserver = vi.fn().mockImplementation(() => ({
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
+}));
+
+// Mock URL.createObjectURL for export functionality
+globalThis.URL.createObjectURL = vi.fn();
+globalThis.URL.revokeObjectURL = vi.fn();

@@ -1,9 +1,8 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 import json
-import logging
 import time
-from typing import Dict, Any
+from typing import Dict, Any, List
 import os
 from dotenv import load_dotenv
 
@@ -12,26 +11,45 @@ from app.core.connection_manager import ConnectionManager
 from app.engine.exercises import get_strategy
 from app.database import db
 
+# Security & Validation
+from pydantic import BaseModel
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+import structlog
+
 # Load environment variables
 load_dotenv()
 
-# Configure Logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("FormCheck")
+# Configure Structured Logging
+structlog.configure(
+    processors=[
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.processors.JSONRenderer(),
+    ]
+)
+logger = structlog.get_logger()
 
 app = FastAPI()
 
+# Rate Limiting Setup
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
+
 # Environment-aware CORS configuration
 allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173")
-# Handle potential comma-separated list
-allowed_origins = [origin.strip() for origin in allowed_origins_str.split(",") if origin.strip()]
+allowed_origins = [
+    origin.strip() for origin in allowed_origins_str.split(",") if origin.strip()
+]
 
-# If no allowed origins specified but we are in dev, fallback to defaults or *
 environment = os.getenv("ENVIRONMENT", "development")
 if environment == "development":
     allowed_origins = ["*"]
 
-logger.info(f"CORS Allowed Origins: {allowed_origins}")
+logger.info("cors_configured", allowed_origins=allowed_origins)
 
 app.add_middleware(
     CORSMiddleware,
@@ -43,14 +61,15 @@ app.add_middleware(
 
 # Global Services
 manager = ConnectionManager()
-# detector = PoseDetector() - Moved to session scope
+MAX_WS_CONNECTIONS = 20  # Limit active WS connections
 
 # Session State: WebSocket -> Dict {"strategy": ExerciseStrategy, "name": str}
 active_sessions: Dict[WebSocket, Dict[str, Any]] = {}
 
 
 @app.get("/health")
-def health_check():
+@limiter.limit("10/minute")
+def health_check(request: Request):
     return {
         "status": "ok",
         "service": "FormCheck API V2",
@@ -59,23 +78,23 @@ def health_check():
 
 
 @app.get("/api/sessions")
-def get_sessions(limit: int = 10):
+@limiter.limit("60/minute")
+def get_sessions(request: Request, limit: int = Query(default=10, ge=1, le=100)):
     return db.get_recent_sessions(limit)
 
 
 @app.get("/api/stats")
-def get_stats():
+@limiter.limit("60/minute")
+def get_stats(request: Request):
     """Return dashboard stats (streak, total reps, etc)"""
     return db.get_stats()
 
 
 @app.get("/api/analytics")
-def get_analytics():
+@limiter.limit("30/minute")
+def get_analytics(request: Request):
     """Return advanced analytics (PRs, Distribution)"""
     return db.get_analytics()
-
-
-from pydantic import BaseModel
 
 
 class GoalUpdate(BaseModel):
@@ -102,7 +121,7 @@ class SessionCreate(BaseModel):
 @app.post("/api/save-session")
 def save_session(session: SessionCreate):
     """Manually save a completed session"""
-    logger.info(f"Manual save: {session.exercise} - {session.reps} reps")
+    logger.info("manual_save", exercise=session.exercise, reps=session.reps)
     db.save_session(session.exercise, session.reps, session.duration)
     return {"status": "saved"}
 
@@ -123,6 +142,12 @@ def delete_all_sessions():
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
+    # Connection Limit Check
+    if len(manager.active_connections) >= MAX_WS_CONNECTIONS:
+        logger.warn("ws_connection_rejected", reason="capacity_reached")
+        await websocket.close(code=1008, reason="Server busy")
+        return
+
     await manager.connect(websocket)
     detector = PoseDetector()
 
@@ -138,9 +163,7 @@ async def websocket_endpoint(websocket: WebSocket):
             data = await websocket.receive_text()
             try:
                 message = json.loads(data)
-                msg_type = message.get(
-                    "type", "FRAME"
-                )  # Default to FRAME for backward compat
+                msg_type = message.get("type", "FRAME")
 
                 if msg_type == "INIT":
                     # Client signaling exercise type
@@ -150,7 +173,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         "name": exercise_name,
                         "start_time": time.time(),
                     }
-                    logger.info(f"Client initialized exercise: {exercise_name}")
+                    logger.info("client_init", exercise=exercise_name)
 
                 elif msg_type == "FRAME":
                     payload = message.get("payload")
@@ -161,14 +184,9 @@ async def websocket_endpoint(websocket: WebSocket):
                         continue
 
                     strategy = session["strategy"]
-
-                    # Run inference using centralized detector
-                    # Note: PoseDetector is thread-safe for inference usually,
-                    # but if we scale, we might need a pool.
                     pose_result = detector.process_frame(payload)
 
                     if pose_result and pose_result.landmarks:
-                        # Process Logic
                         result = strategy.process(pose_result.landmarks)
 
                         response = {
@@ -187,10 +205,10 @@ async def websocket_endpoint(websocket: WebSocket):
             except json.JSONDecodeError:
                 pass
             except Exception as e:
-                logger.error(f"Error handling message: {e}")
+                logger.error("ws_msg_error", error=str(e))
 
     except WebSocketDisconnect:
-        logger.info("Client disconnected")
+        logger.info("client_disconnect")
         manager.disconnect(websocket)
         detector.close()
 
@@ -206,6 +224,9 @@ async def websocket_endpoint(websocket: WebSocket):
                 duration = int(end_time - start_time) if start_time else 0
 
                 logger.info(
-                    f"Saving session: {name} - {strategy.reps} reps - {duration}s"
+                    "saving_session",
+                    exercise=name,
+                    reps=strategy.reps,
+                    duration=duration,
                 )
                 db.save_session(name, strategy.reps, duration)

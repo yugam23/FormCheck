@@ -48,9 +48,11 @@ export const RecentActivity = React.memo<RecentActivityProps>(({ sessions, onDel
             </CardContent>
             <button
                 onClick={onClearHistory}
+                aria-label="Clear all workout history"
+                title="Clear all workout history"
                 className="w-full mt-6 text-xs font-medium text-center text-muted-foreground hover:text-red-400 transition-colors flex items-center justify-center gap-2 py-3 hover:bg-white/5 rounded-xl"
             >
-                <Trash2 size={14} />
+                <Trash2 size={14} aria-hidden="true" />
                 Clear History
             </button>
         </Card>

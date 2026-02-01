@@ -64,6 +64,8 @@ export const Modal: React.FC<ModalProps> = ({
             ref={overlayRef}
             onClick={handleOverlayClick}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+            role="dialog"
+            aria-modal="true"
         >
             <div 
                 className={cn(

@@ -69,8 +69,9 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                             onClick={handleDelete}
                             className="p-2 text-muted-foreground hover:text-red-400 hover:bg-white/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
                             title="Delete Session"
+                            aria-label={`Delete ${session.exercise} session from ${dateStr}`}
                         >
-                            <Trash2 size={18} />
+                            <Trash2 size={18} aria-hidden="true" />
                         </button>
                     )}
                 </div>
@@ -86,8 +87,9 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                     onClick={handleDelete}
                     className="absolute right-2 top-2 p-1.5 text-muted-foreground hover:text-red-400 hover:bg-white/20 rounded-lg opacity-0 group-hover:opacity-100 transition-all z-10"
                     title="Delete Session"
+                    aria-label={`Delete ${session.exercise} session`}
                 >
-                    <Trash2 size={14} />
+                    <Trash2 size={14} aria-hidden="true" />
                 </button>
             )}
             

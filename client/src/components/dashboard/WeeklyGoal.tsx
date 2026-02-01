@@ -49,6 +49,7 @@ export const WeeklyGoal = React.memo<WeeklyGoalProps>(({ currentReps, goal, onUp
                         setIsEditing(true);
                     }}
                     className="text-xs text-muted-foreground hover:text-white transition-colors bg-white/10 px-2 py-1 rounded-md"
+                    aria-label="Edit weekly goal"
                 >
                     Edit
                 </button>
@@ -58,10 +59,12 @@ export const WeeklyGoal = React.memo<WeeklyGoalProps>(({ currentReps, goal, onUp
                 <div className="flex flex-col items-center gap-3 mt-12 animate-fade-in">
                     <input
                         type="number"
+                        id="goal-input"
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
                         className="bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-white text-xl w-32 text-center focus:outline-none focus:ring-2 focus:ring-primary/50"
                         autoFocus
+                        aria-label="New goal"
                     />
                     <div className="flex gap-2 w-full">
                         <button onClick={handleSave} className="flex-1 py-1.5 bg-primary text-black text-xs font-bold rounded-lg hover:bg-primary/90">Save</button>

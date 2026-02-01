@@ -202,10 +202,10 @@ const WebcamCapture = ({ activeExercise = 'Pushups', onConnectionStatus, onPoseD
         <div className="relative w-full h-full flex items-center justify-center bg-black rounded-xl overflow-hidden">
             {/* Video Feed */}
             <video
-                ref={videoRef}
                 className="w-full h-full object-contain transform scale-x-[-1]" // Mirror effect, object-contain to preserve aspect ratio
                 playsInline
                 muted
+                aria-label="Live webcam feed"
             />
 
             {/* Hidden processing canvas */}
@@ -245,27 +245,32 @@ const WebcamCapture = ({ activeExercise = 'Pushups', onConnectionStatus, onPoseD
 
             {/* Connection Status Overlay */}
             {connectionStatus !== 'Open' && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
+                <div 
+                    className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50"
+                    role="alert" 
+                    aria-live="polite"
+                >
                     <div className="glass-panel p-8 rounded-2xl text-center max-w-sm">
                         {connectionStatus === 'Closed' || connectionStatus === 'Uninstantiated' ? (
                             <>
                                 <div className="mx-auto w-12 h-12 bg-red-500/20 text-red-500 rounded-full flex items-center justify-center mb-4">
-                                    <AlertTriangle size={24} />
+                                    <AlertTriangle size={24} aria-hidden="true" />
                                 </div>
                                 <h3 className="text-xl font-bold text-white mb-2">Connection Lost</h3>
                                 <p className="text-sm text-gray-400 mb-6">Unable to connect to the AI server. Please ensure the backend is running.</p>
                                 <button 
                                     onClick={() => window.location.reload()} 
                                     className="btn-secondary w-full flex items-center justify-center"
+                                    aria-label="Retry connection to server"
                                 >
-                                    <RefreshCw size={16} className="mr-2" />
+                                    <RefreshCw size={16} className="mr-2" aria-hidden="true" />
                                     Retry Connection
                                 </button>
                             </>
                         ) : (
                             <>
                                 <div className="mx-auto w-12 h-12 flex items-center justify-center mb-4">
-                                    <Loader2 size={32} className="text-primary animate-spin" />
+                                    <Loader2 size={32} className="text-primary animate-spin" aria-hidden="true" />
                                 </div>
                                 <h3 className="text-lg font-bold text-white mb-1">Connecting...</h3>
                                 <p className="text-sm text-gray-500">Establishing secure link to neural engine</p>

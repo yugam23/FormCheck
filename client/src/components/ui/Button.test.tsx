@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Button } from './Button';
-import { Check } from 'lucide-react';
 
 describe('Button', () => {
     it('renders correctly with default props', () => {

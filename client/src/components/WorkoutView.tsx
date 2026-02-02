@@ -1,3 +1,58 @@
+// WorkoutView.tsx
+//
+// Real-time workout session orchestrator.
+//
+// This is the core user experience—the active workout with webcam feedback.
+// It coordinates all real-time components:
+//   - WebcamCapture: Camera stream and WebSocket communication
+//   - StatsPanel: Live rep count and feedback display
+//   - VoiceFeedback: Audio cues for form corrections
+//
+// Session Lifecycle:
+//   1. User lands here from HomeView with exercise type in router state
+//   2. WebSocket connects automatically (via WebcamCapture)
+//   3. User clicks "Start Session" to begin sending frames
+//   4. User clicks "End Session" to save data and navigate to dashboard
+//
+// Data Flow:
+//   WebcamCapture -> (pose data) -> this component -> StatsPanel
+//                 -> (feedback) -> VoiceFeedback hook -> audio
+
+// Session Lifecycle State Machine:
+//
+// ┌──────────────┐
+// │ Page Load    │
+// └──────┬───────┘
+//        │
+//        ▼
+// ┌──────────────┐  User clicks      ┌──────────────┐
+// │  READY       │─────"Start"──────►│   ACTIVE     │
+// │              │                   │              │
+// │ - Camera on  │                   │ - Sending    │
+// │ - WS open    │                   │   frames     │
+// │ - Timer: 0   │                   │ - Timer: up  │
+// └──────────────┘                   │ - Reps: ++   │
+//                                    └──────┬───────┘
+//                                           │ User clicks
+//                                           │ "End"
+//                                           ▼
+//                                    ┌──────────────┐
+//                                    │   SAVING     │
+//                                    │              │
+//                                    │ - POST /api  │
+//                                    │ - Loading... │
+//                                    └──────┬───────┘
+//                                           │
+//                                           ▼
+//                                    ┌──────────────┐
+//                                    │  Navigate    │
+//                                    │  Dashboard   │
+//                                    └──────────────┘
+//
+// State Persistence:
+//   - Reps/Time: Lost on navigation (intentional, fresh start per session)
+//   - Exercise: Passed via router state from HomeView
+//   - WS connection: Shared across app (react-use-websocket share: true)
 
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';

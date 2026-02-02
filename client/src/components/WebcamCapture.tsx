@@ -1,3 +1,51 @@
+// WebcamCapture.tsx
+//
+// Core real-time component bridging webcam and pose detection backend.
+//
+// Data Pipeline:
+//   Camera -> Canvas (hidden) -> JPEG encode -> Base64 -> WebSocket -> Backend
+//   Backend -> JSON landmarks -> this component -> SkeletonOverlay
+//
+// Why a Hidden Canvas:
+//   The video element displays to user, but canvas is needed to extract
+//   pixel data (getContext('2d').drawImage). We compress to JPEG (quality 0.6)
+//   before base64 encoding to reduce WS bandwidth by ~60%.
+//
+// Frame Rate:
+//   Controlled by FRAME_RATE constant (15 FPS default). Uses requestAnimationFrame
+//   with timestamp throttling to ensure consistent capture rate.
+//
+// WebSocket Strategy:
+//   - Shared connection (react-use-websocket's `share: true`)
+//   - Exponential backoff reconnection (1s → 2s → 4s → ... up to 10s)
+//   - INIT message sent on connect to configure backend exercise state
+
+// WebSocket Message Protocol:
+//
+// Client → Server:
+//   1. INIT Message (sent on connection and session start)
+//      { type: "INIT", exercise: "Pushups" }
+//
+//   2. FRAME Message (sent at 15 FPS during active session)
+//      { type: "FRAME", payload: "base64_jpeg_string", timestamp: 1234567890 }
+//
+// Server → Client:
+//   1. RESULT Message (pose detected successfully)
+//      {
+//        type: "RESULT",
+//        landmarks: [{ x, y, z, visibility }, ...],  // 33 MediaPipe landmarks
+//        reps: 5,
+//        state: "CONCENTRIC",
+//        feedback: { message: "GOOD DEPTH", color: "green", angle: 85 }
+//      }
+//
+//   2. NO_DETECTION Message (no pose found in frame)
+//      { type: "NO_DETECTION" }
+//
+// Edge Cases:
+//   - Multiple INIT messages: Server resets exercise state (allows mid-session exercise switch)
+//   - Disconnection during FRAME send: Handled by exponential backoff reconnection
+//   - Backpressure: Client throttles at 15 FPS, server processes immediately (no queuing)
 
 import { useRef, useEffect, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';

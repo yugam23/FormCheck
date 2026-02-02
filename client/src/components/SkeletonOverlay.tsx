@@ -1,3 +1,35 @@
+// SkeletonOverlay.tsx
+//
+// Canvas-based skeleton visualization drawn over the webcam feed.
+//
+// Rendering:
+//   Uses HTML5 Canvas 2D API to draw the user's skeletal wireframe.
+//   Connections are defined between MediaPipe landmark indices (e.g., 11-12 = shoulders).
+//
+// Landmark Indices (MediaPipe Pose):
+//   11-12: Shoulders     13-14: Elbows      15-16: Wrists
+//   23-24: Hips          25-26: Knees       27-28: Ankles
+//
+// Visibility Filtering:
+//   Only draws landmarks with visibility > 0.5 to avoid phantom joints
+//   when body parts are occluded or out of frame.
+//
+// Color Coding:
+//   Green (good form) or Red (form correction needed) based on feedback.color
+//
+// Rendering Strategy:
+//   - Uses 2D Canvas API (not WebGL) for maximum compatibility
+//   - Fallback: If canvas unsupported, gracefully hides overlay
+//   - Performance: 33 landmarks × 2 draws (joints + connections) = ~1ms render time
+//
+// Coordinate Mapping:
+//   - MediaPipe returns normalized coords (0.0-1.0)
+//   - Scaled to canvas dimensions: x * width, y * height
+//   - Mirrored horizontally to match video feed (scale-x-[-1])
+//
+// Known Limitations:
+//   - Aspect ratio mismatch: If video crops, skeleton won't align perfectly
+//   - Future: Use object-fit calculations for precise mapping
 
 import { useRef, useEffect } from 'react';
 import type { PoseData } from '../types';

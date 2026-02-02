@@ -1,3 +1,20 @@
+// useVoiceFeedback.ts
+//
+// Web Speech API wrapper for real-time workout audio cues.
+//
+// Problem Solved:
+//   During exercise, the backend sends feedback every frame (~15 FPS).
+//   Without throttling, this would result in overlapping, unintelligible speech.
+//   This hook deduplicates messages and enforces a minimum interval (VOICE_THROTTLE_MS).
+//
+// Throttling Strategy:
+//   - New messages: Speak immediately (after canceling any in-progress speech)
+//   - Repeated messages: Only speak if VOICE_THROTTLE_MS has elapsed
+//   - Force flag: Bypass throttling for important events like rep completion
+//
+// Browser Support:
+//   Falls back gracefully if window.speechSynthesis is unavailable.
+//   Most modern browsers support it; check caniuse.com for specifics.
 
 import { useState, useCallback, useRef } from 'react';
 import { VOICE_THROTTLE_MS, VOICE_RATE, VOICE_PITCH, VOICE_VOLUME } from '../lib/constants';

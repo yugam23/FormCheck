@@ -1,9 +1,30 @@
+// useExport.ts
+//
+// CSV export functionality for workout session history.
+//
+// Fetches all sessions (limit=-1) from the API and generates a downloadable
+// CSV file with date, time, exercise type, reps, and duration.
+//
+// CSV Format:
+//   Date,Time,Exercise,Reps,Duration(s)
+//   1/15/2024,10:30:00 AM,Pushups,25,120
+//
+// File Naming:
+//   formcheck_export_YYYY-MM-DD.csv (using current date)
+
 import { useState } from 'react';
 import { API_URL } from '../lib/constants';
 import { handleApiResponse, ApiError } from '../lib/errorHandler';
 import { useToast } from '../components/ui/Toast';
 import type { Session } from '../types';
 
+/**
+ * Hook for exporting workout history to CSV.
+ *
+ * @returns
+ * - isExporting: Loading state during export
+ * - exportToCSV: Trigger function that fetches all sessions and downloads CSV
+ */
 export function useExport() {
     const [isExporting, setIsExporting] = useState(false);
     const toast = useToast();

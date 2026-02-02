@@ -11,6 +11,27 @@ services:
     volumes:
       - ./server/formcheck.db:/app/formcheck.db
     restart: unless-stopped
+    # Production Deployment Checklist:
+    #
+    # Environment Variables:
+    #   - VITE_API_URL: Backend URL (e.g., https://api.formcheck.io)
+    #   - VITE_WS_URL: WebSocket URL (e.g., wss://api.formcheck.io/ws)
+    #   - ENVIRONMENT: "production" (enables CORS restrictions)
+    #
+    # Performance:
+    #   - CPU: 2+ cores recommended (MediaPipe is CPU-intensive)
+    #   - RAM: 2GB minimum (200MB per active WebSocket connection)
+    #   - Network: 5 Mbps upload per user (video streaming)
+    #
+    # Scaling:
+    #   - Horizontal: Not supported (WebSocket state is in-memory)
+    #   - Vertical: Linear scaling with CPU cores (up to ~20 concurrent users)
+    #   - Future: Redis for WebSocket state sharing across instances
+    #
+    # Security:
+    #   - HTTPS/WSS: Required for camera access in browsers
+    #   - Rate limiting: 100 req/min default (adjust in main.py)
+    #   - CORS: Whitelist specific origins in production
 
   client:
     build: ./client

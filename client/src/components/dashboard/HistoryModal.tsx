@@ -1,3 +1,37 @@
+// HistoryModal.tsx
+//
+// Full-screen modal for viewing and managing complete workout history.
+//
+// Data Loading:
+//   Sessions are fetched lazily when the modal opens (via useFetch with immediate: false).
+//   This avoids loading all history data on initial dashboard render.
+//
+// Actions:
+//   - Delete individual sessions (confirmation dialog)
+//   - Clear all history (destructive, confirmation required)
+//
+// Uses Modal component for consistent dialog behavior and styling.
+//
+// State Management Pattern:
+//
+// Parent (Dashboard)          Child (HistoryModal)
+//   ├─ sessions: Session[]  →  receives via props
+//   ├─ isOpen: boolean      →  controls visibility
+//   └─ onClose: () => void  →  callback to parent
+//
+// Why Lifted State:
+//   - Sessions data: Shared with RecentActivity component
+//   - Modal open state: Controlled by parent (single source of truth)
+//   - Delete actions: Trigger refetch in parent, auto-updates modal
+//
+// Event Flow:
+//   1. User clicks "View All" in Dashboard
+//   2. Parent sets isModalOpen = true
+//   3. Modal renders with sessions prop
+//   4. User deletes session → onDeleteSession callback
+//   5. Parent refetches → new sessions flow down
+//   6. Modal auto-updates (React re-render)
+
 import React from 'react';
 import { Trash2 } from 'lucide-react';
 import { SessionCard } from './SessionCard';

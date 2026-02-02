@@ -1,3 +1,64 @@
+// Dashboard.tsx
+//
+// Main analytics dashboard displaying workout statistics and history.
+//
+// Layout Structure (12-column grid):
+//   Left Column (8 cols):
+//     - StatsCards: Total sessions, reps, streak summary
+//     - ActivityChart: 7-day rep count bar chart
+//     - DistributionChart + PersonalRecords: Pie chart and PR list
+//
+//   Right Column (4 cols):
+//     - WeeklyGoal: Progress toward weekly rep target
+//     - RecentActivity: Latest workout sessions
+//
+// Data Strategy:
+//   Uses useDashboardData hook to aggregate 4 API endpoints into a single
+//   loading/error state. Chart data is computed (memoized) from raw sessions.
+//
+// Height Sync:
+//   Uses ResizeObserver to synchronize right column height with left column,
+//   creating a balanced bento-grid layout on desktop.
+//
+// See Also:
+//   - hooks/useDashboardData.ts: Data aggregation logic
+//   - hooks/useExport.ts: CSV export functionality
+
+// Data Flow Architecture:
+//
+//     ┌──────────────────────────────────────────────┐
+//     │           Dashboard Component                │
+//     └────────────────┬─────────────────────────────┘
+//                      │
+//        ┌─────────────┼─────────────┐
+//        │             │             │
+//        ▼             ▼             ▼
+//   ┌────────┐   ┌─────────┐   ┌──────────┐
+//   │useFetch│   │useFetch │   │ useFetch │
+//   │sessions│   │  stats  │   │analytics │
+//   └────┬───┘   └────┬────┘   └────┬─────┘
+//        │            │             │
+//        │ GET /api/sessions        │
+//        │            │ GET /api/stats
+//        │            │             │ GET /api/analytics
+//        ▼            ▼             ▼
+//   ┌────────────────────────────────────┐
+//   │         FastAPI Backend            │
+//   │  ┌──────┐  ┌──────┐  ┌──────┐     │
+//   │  │SQLite│  │SQLite│  │SQLite│     │
+//   │  └──────┘  └──────┘  └──────┘     │
+//   └────────────────────────────────────┘
+//
+// Parallel Fetching:
+//   - All 3 endpoints called simultaneously on mount
+//   - Individual loading states (per-component spinners)
+//   - Error isolation (one failure doesn't block others)
+//
+// Cache Strategy:
+//   - No caching: Always fetch fresh data on mount
+//   - Manual refetch: Triggered after session save/delete
+//   - Optimistic updates: Not implemented (data updates on refetch)
+
 import { ArrowUpRight, AlertCircle, X, Loader2 } from 'lucide-react';
 import { useToast } from './ui/Toast';
 import { useEffect, useState, useRef, useLayoutEffect } from 'react';

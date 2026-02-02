@@ -1,3 +1,18 @@
+// PersonalRecords.tsx
+//
+// Personal best display for each exercise type.
+//
+// Data:
+//   PRs are calculated server-side via /api/analytics endpoint.
+//   Each PR represents the maximum reps (or time for Plank) in a single session.
+//
+// Formatting:
+//   Uses formatMetric() to handle time-based exercises (Plank shows MM:SS)
+//   vs rep-based exercises (Pushups shows count).
+//
+// Empty State:
+//   Shows "No records yet" message when user has no completed sessions.
+
 import React from 'react';
 import { Medal } from 'lucide-react';
 import { formatMetric } from '../../lib/formatters';

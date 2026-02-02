@@ -1,3 +1,20 @@
+// SessionCard.tsx
+//
+// Individual workout session display card.
+//
+// Variants:
+//   - compact: For sidebar/recent activity lists (smaller, less detail)
+//   - detailed: For history modal/full lists (larger, more info)
+//
+// Data Display:
+//   - Exercise name
+//   - Date and time (from Unix timestamp)
+//   - Reps or hold time (Plank shows seconds)
+//
+// Delete:
+//   Delete button appears on hover (opacity transition).
+//   onClick is stopped from propagating to parent click handlers.
+
 import React from 'react';
 import { Trash2, Dumbbell } from 'lucide-react';
 import type { Session } from '../../types';

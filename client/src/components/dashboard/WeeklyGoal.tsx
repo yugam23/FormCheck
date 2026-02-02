@@ -1,3 +1,19 @@
+// WeeklyGoal.tsx
+//
+// Circular progress indicator for weekly rep goal.
+//
+// Progress Visualization:
+//   Uses SVG strokeDasharray/strokeDashoffset animation to create
+//   an animated circular progress bar. The glow filter adds visual polish.
+//
+// Edit Mode:
+//   Users can click "Edit" to enter a new goal target.
+//   Goal is persisted via /api/settings/goal endpoint.
+//
+// Formula:
+//   Progress % = (currentReps / goal) * 100
+//   strokeDashoffset = circumference - (progress * circumference)
+
 import React, { useState } from 'react';
 import { Trophy } from 'lucide-react';
 import { useToast } from '../ui/Toast';

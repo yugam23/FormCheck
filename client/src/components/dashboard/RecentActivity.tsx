@@ -1,3 +1,18 @@
+// RecentActivity.tsx
+//
+// Sidebar component showing recent workout sessions.
+//
+// Displays the most recent sessions in a scrollable list.
+// Each session is rendered as a SessionCard with delete capability.
+//
+// Scrolling:
+//   Uses custom-scrollbar CSS class for styled overflow scrolling.
+//   Flex-1 with min-h-0 allows proper flexbox overflow handling.
+//
+// Actions:
+//   - Individual session deletion (with confirmation)
+//   - Clear all history button at bottom
+
 import React from 'react';
 import { Clock, Trash2 } from 'lucide-react';
 import { SessionCard } from './SessionCard';

@@ -1,3 +1,22 @@
+// useDashboardData.ts
+//
+// Aggregates and transforms data from multiple API endpoints for the dashboard.
+//
+// Fetches from:
+//   - /api/sessions: Recent workout sessions
+//   - /api/stats: Summary statistics (total reps, streak, etc.)
+//   - /api/analytics: Personal records and exercise distribution
+//   - /api/settings/goal: User's weekly goal setting
+//
+// Why a dedicated hook:
+//   The dashboard needs data from 4 endpoints. This hook consolidates them
+//   into a single loading state, combined error message, and provides derived
+//   data (chartData) ready for visualization components.
+//
+// Chart Data:
+//   Computes daily rep counts for the last 7 days for the activity chart.
+//   Uses session timestamps to bucket reps by day.
+
 import { useMemo, useCallback, useState, useEffect } from 'react';
 import { useFetch } from './useFetch';
 import { API_URL, DEFAULT_WEEKLY_GOAL } from '../lib/constants';

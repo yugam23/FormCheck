@@ -1,3 +1,17 @@
+// DistributionChart.tsx
+//
+// Donut chart showing workout distribution across exercises.
+//
+// Visualization:
+//   Uses Recharts PieChart with innerRadius to create donut effect.
+//   Colors are passed as props to allow consistent theming across app.
+//
+// Data Format:
+//   Array of { name: "Pushups", value: 45 } where value is count or percentage.
+//   Data is computed server-side via /api/analytics endpoint.
+//
+// Memoized to prevent re-renders during unrelated parent updates.
+
 import React from 'react';
 import { PieChart as PieIcon } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';

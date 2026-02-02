@@ -1,3 +1,15 @@
+// StatsCards.tsx
+//
+// Summary statistics display for the dashboard header.
+//
+// Displays three key metrics:
+//   1. Total Reps: Lifetime count across all exercises
+//   2. Total Sessions: Number of workouts in the last 7 days
+//   3. Day Streak: Consecutive days with at least one workout
+//
+// Memoized with React.memo to prevent re-renders when parent updates
+// but stats remain unchanged.
+
 import React from 'react';
 import { TrendingUp, Dumbbell, Calendar, Trophy } from 'lucide-react';
 import { Card } from '../ui/Card';

@@ -149,24 +149,30 @@ const WebcamCapture = ({ activeExercise = 'Pushups', onConnectionStatus, onPoseD
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const data: any = JSON.parse(lastMessage.data);
                 // Server sends: { type: "RESULT", landmarks: [], feedback: {}, ... }
-                // or { type: "NO_DETECTION" }
+                // or { type: "NO_DETECTION", reps: N }
                 
                 if (data.type === 'RESULT') {
-                    // Update parent ONLY
+                    // Update parent with full pose data
                     if (onPoseDataUpdate) {
                         onPoseDataUpdate(data as PoseData);
                     }
                 } else if (data.type === 'NO_DETECTION') {
-                     // Notify parent of no detection to clear skeletons
-                     if (onPoseDataUpdate) {
-                         onPoseDataUpdate(null);
-                     }
+                    // Preserve rep count, just clear landmarks for skeleton
+                    if (onPoseDataUpdate && poseData) {
+                        onPoseDataUpdate({
+                            ...poseData,
+                            landmarks: undefined,  // Clear skeleton
+                            reps: data.reps ?? poseData.reps,  // Keep rep count from server
+                        });
+                    }
                 }
             } catch (e) {
                 console.error("Error parsing WS message", e);
             }
         }
-    }, [lastMessage, onPoseDataUpdate]);
+    }, [lastMessage, onPoseDataUpdate, poseData]);
+
+    const [cameraError, setCameraError] = useState<string | null>(null);
 
     // Setup Camera
     useEffect(() => {
@@ -174,8 +180,9 @@ const WebcamCapture = ({ activeExercise = 'Pushups', onConnectionStatus, onPoseD
 
         const setupCamera = async () => {
             try {
+                setCameraError(null);
                 stream = await navigator.mediaDevices.getUserMedia({
-                    video: { width: VIDEO_WIDTH, height: VIDEO_HEIGHT, facingMode: 'user' },
+                    video: { width: VIDEO_WIDTH, height: VIDEO_HEIGHT }, // Removed strict facingMode for desktop compatibility
                     audio: false,
                 });
 
@@ -183,11 +190,19 @@ const WebcamCapture = ({ activeExercise = 'Pushups', onConnectionStatus, onPoseD
                     videoRef.current.srcObject = stream;
                     videoRef.current.onloadedmetadata = () => {
                         setIsCameraReady(true);
-                        videoRef.current?.play();
+                        videoRef.current?.play().catch(e => {
+                            console.error("Play error:", e);
+                            setCameraError("Autoplay blocked. Click to start.");
+                        });
                     };
                 }
-            } catch (err) {
+            } catch (err: any) {
                 console.error("Error accessing webcam:", err);
+                let msg = "Could not access camera.";
+                if (err.name === 'NotAllowedError') msg = "Camera permission denied. Please allow access.";
+                if (err.name === 'NotFoundError') msg = "No camera found.";
+                if (err.name === 'NotReadableError') msg = "Camera is in use by another app.";
+                setCameraError(msg);
             }
         };
 
@@ -250,6 +265,7 @@ const WebcamCapture = ({ activeExercise = 'Pushups', onConnectionStatus, onPoseD
         <div className="relative w-full h-full flex items-center justify-center bg-black rounded-xl overflow-hidden">
             {/* Video Feed */}
             <video
+                ref={videoRef}
                 className="w-full h-full object-contain transform scale-x-[-1]" // Mirror effect, object-contain to preserve aspect ratio
                 playsInline
                 muted
@@ -290,6 +306,23 @@ const WebcamCapture = ({ activeExercise = 'Pushups', onConnectionStatus, onPoseD
                 <div className="text-[10px] text-muted-foreground uppercase tracking-widest">FPS</div>
                 <div className="font-mono text-sm font-bold text-primary">{fps > 0 ? fps : '--'}</div>
             </div>
+
+            {/* Camera Error Overlay */}
+            {cameraError && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-50">
+                    <div className="text-center p-6 max-w-sm">
+                        <AlertTriangle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+                        <h3 className="text-xl font-bold text-white mb-2">Camera Error</h3>
+                        <p className="text-red-400 mb-4">{cameraError}</p>
+                        <button 
+                            onClick={() => window.location.reload()}
+                            className="btn-secondary text-sm"
+                        >
+                            Retry
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Connection Status Overlay */}
             {connectionStatus !== 'Open' && (

@@ -53,6 +53,27 @@ const StatsPanel = ({ repData, feedback, sessionTime, className, exerciseName }:
 
     const score = repData?.form_quality_score || 0;
     const isPlank = exerciseName === 'Plank';
+    const isPushup = exerciseName === 'Pushups';
+
+    // Calculate Pushup Extension Percentage from angle (if provided)
+    // Range: 90 (0%) -> 160 (100%)
+    let extensionPct = 0;
+    if (isPushup && feedback?.angle) {
+        extensionPct = Math.min(Math.max(((feedback.angle - 90) / (160 - 90)) * 100, 0), 100);
+    }
+
+    // Helper for Feedback Colors
+    const getFeedbackStyles = (color: string) => {
+        switch (color) {
+            case 'green': return { border: "border-green-500/30", text: "text-green-400", bg: "bg-green-500" };
+            case 'red': return { border: "border-red-500/30", text: "text-red-400", bg: "bg-red-500" };
+            case 'blue': return { border: "border-blue-500/30", text: "text-blue-400", bg: "bg-blue-500" };
+            case 'yellow': return { border: "border-yellow-500/30", text: "text-yellow-400", bg: "bg-yellow-500" };
+            default: return { border: "border-gray-500/30", text: "text-gray-400", bg: "bg-gray-500" };
+        }
+    };
+
+    const feedbackStyle = feedback?.color ? getFeedbackStyles(feedback.color) : null;
 
     return (
         <div className={cn("space-y-6", className)}>
@@ -78,8 +99,26 @@ const StatsPanel = ({ repData, feedback, sessionTime, className, exerciseName }:
                     </div>
                 </div>
 
-                {/* Form Quality Score */}
+                {/* Form Quality Score or Extension Bar */}
                 <div className="glass-panel p-5 relative overflow-hidden group hover:border-blue-500/50 transition-colors">
+                    
+                    {isPushup && (
+                         <div className="mb-4">
+                            <div className="flex justify-between items-center text-xs text-muted-foreground mb-1 uppercase tracking-wider">
+                                <span>Extension</span>
+                                <span>{Math.round(extensionPct)}%</span>
+                            </div>
+                            <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
+                                <div 
+                                    className={cn("h-full transition-all duration-300", 
+                                        extensionPct > 90 ? "bg-green-500" : extensionPct < 20 ? "bg-green-500" : "bg-blue-500"
+                                    )}
+                                    style={{ width: `${extensionPct}%` }}
+                                ></div>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="flex justify-between items-end">
                         <div className="flex flex-col">
                              <div className="flex items-center space-x-2 text-muted-foreground mb-1">
@@ -118,13 +157,14 @@ const StatsPanel = ({ repData, feedback, sessionTime, className, exerciseName }:
             </div>
 
             {/* Feedback Message Banner */}
-            {feedback?.message && (
+            {feedback?.message && feedbackStyle && (
                 <div className={cn(
-                    "p-4 rounded-lg bg-black/40 backdrop-blur-md border animate-fade-in",
-                    feedback.color === 'green' ? "border-green-500/30 text-green-400" : "border-red-500/30 text-red-400"
+                    "p-4 rounded-lg bg-black/40 backdrop-blur-md border animate-fade-in transition-colors duration-300",
+                    feedbackStyle.border,
+                    feedbackStyle.text
                 )}>
                     <div className="flex items-center space-x-3">
-                        <div className={cn("w-1 h-8 rounded-full", feedback.color === 'green' ? "bg-green-500" : "bg-red-500")}></div>
+                        <div className={cn("w-1 h-8 rounded-full transition-colors duration-300", feedbackStyle.bg)}></div>
                         <div>
                             <p className="text-xs font-mono opacity-70 uppercase tracking-wider mb-0.5">Analysis</p>
                             <p className="font-bold text-lg leading-none">{feedback.message}</p>

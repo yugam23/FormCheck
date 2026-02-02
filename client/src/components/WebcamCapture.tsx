@@ -144,7 +144,7 @@ const WebcamCapture = ({ activeExercise = 'Pushups', onConnectionStatus, onPoseD
 
     // Handle incoming messages
     useEffect(() => {
-        if (lastMessage) {
+        if (lastMessage && sessionActive) {
             try {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const data: any = JSON.parse(lastMessage.data);
@@ -170,7 +170,7 @@ const WebcamCapture = ({ activeExercise = 'Pushups', onConnectionStatus, onPoseD
                 console.error("Error parsing WS message", e);
             }
         }
-    }, [lastMessage, onPoseDataUpdate, poseData]);
+    }, [lastMessage, onPoseDataUpdate, poseData, sessionActive]);
 
     const [cameraError, setCameraError] = useState<string | null>(null);
 
@@ -281,7 +281,7 @@ const WebcamCapture = ({ activeExercise = 'Pushups', onConnectionStatus, onPoseD
             />
 
             {/* Skeleton Overlay */}
-            {poseData && (
+            {poseData && sessionActive && (
                 <div className="absolute inset-0 pointer-events-none transform scale-x-[-1] flex items-center justify-center">
                     {/* Container to match video aspect ratio if possible, but absolute overlay works for now */}
                      <div className="relative" style={{ width: '100%', height: '100%', maxHeight: '100%' }}>

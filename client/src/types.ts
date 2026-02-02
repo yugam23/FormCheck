@@ -26,7 +26,7 @@ export interface Landmark {
 
 /** Real-time form feedback from exercise strategy */
 export interface FeedbackData {
-    color: 'red' | 'green';
+    color: 'red' | 'green' | 'blue' | 'yellow';
     message: string;
     angle?: number;
 }

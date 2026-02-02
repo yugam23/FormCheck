@@ -100,7 +100,7 @@ const WorkoutView = () => {
     const prevRepsRef = useRef(0);
 
     useEffect(() => {
-        if (poseData) {
+        if (poseData && isSessionActive) {
             // Rep Counting Voice
             if (poseData.reps && poseData.reps > prevRepsRef.current) {
                 speak(poseData.reps.toString(), true);
@@ -116,7 +116,7 @@ const WorkoutView = () => {
                  }
             }
         }
-    }, [poseData, speak]);
+    }, [poseData, speak, isSessionActive]);
 
     useEffect(() => {
         let interval: ReturnType<typeof setInterval>;

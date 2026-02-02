@@ -247,7 +247,11 @@ async def websocket_endpoint(websocket: WebSocket):
                             "state": result["state"],
                         }
                     else:
-                        response = {"type": "NO_DETECTION"}
+                        # Preserve rep count even when pose not detected
+                        response = {
+                            "type": "NO_DETECTION",
+                            "reps": strategy.reps,  # Keep the current count
+                        }
 
                     await websocket.send_text(json.dumps(response))
 

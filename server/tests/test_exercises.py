@@ -12,40 +12,32 @@ def test_pushup_strategy():
     strategy = PushupStrategy()
     landmarks = create_landmarks()
 
-    # 1. Start State - Arms Extended (angle ~180) -> Should tell to go down (State changes to ECCENTRIC)
-    # We need to set shoulder(11), elbow(13), wrist(15)
-    # Straight arm:
-    landmarks[11] = Landmark(x=0, y=0, z=0, visibility=1.0)  # Shoulder
-    landmarks[13] = Landmark(x=0, y=1, z=0, visibility=1.0)  # Elbow
-    landmarks[15] = Landmark(x=0, y=2, z=0, visibility=1.0)  # Wrist
-    # This is 180 degrees.
+    # Helper to set relevant landmarks for pushup
+    def set_pose(elbow_x, elbow_y, wrist_x, wrist_y, hip_y=0):
+        landmarks[11] = Landmark(x=0, y=0, z=0, visibility=1.0)  # Shoulder
+        landmarks[13] = Landmark(x=elbow_x, y=elbow_y, z=0, visibility=1.0)  # Elbow
+        landmarks[15] = Landmark(x=wrist_x, y=wrist_y, z=0, visibility=1.0)  # Wrist
+        landmarks[23] = Landmark(x=-1, y=hip_y, z=0, visibility=1.0)  # Hip
+        landmarks[25] = Landmark(x=-2, y=0, z=0, visibility=1.0)  # Knee
 
+    # 1. Start State - Arms Extended -> Transition to ECCENTRIC
+    set_pose(1, 0, 2, 0, hip_y=0)  # Straight arm
     result = strategy.process(landmarks)
     assert result["state"] == "ECCENTRIC"
     assert "GO DOWN" in result["feedback"]["message"]
 
-    # 2. Go Down - Angle < 90
-    landmarks[13] = Landmark(x=0.5, y=0.1, z=0, visibility=1.0)  # Elbow bent
-    # Creating 90 deg manually is hard with coords, let's just trust geometry module works
-    # and simluating the angle logic if we could mock calculate_angle.
-    # But since we invoke process(), we rely on real calculate_angle.
-    # Let's try to pass geometric points that form 90 deg.
-    # Shoulder (1,1), Elbow (0,0), Wrist (1,0) -> 45 deg (Acute)
-    landmarks[11] = Landmark(x=1, y=1, z=0, visibility=1.0)
-    landmarks[13] = Landmark(x=0, y=0, z=0, visibility=1.0)
-    landmarks[15] = Landmark(x=1, y=0, z=0, visibility=1.0)
-
+    # 2. Eccentric Phase - Bend elbow (< 90 degrees)
+    set_pose(1, 1, 2, 0, hip_y=0)  # Elbow bent ~45 deg
     result = strategy.process(landmarks)
     assert result["state"] == "CONCENTRIC"
-    assert "GOOD DEPTH" in result["feedback"]["message"]
+    assert "GO UP" in result["feedback"]["message"]
 
-    # 3. Go Up - Angle > 160
-    landmarks[13] = Landmark(x=1, y=2, z=0, visibility=1.0)
-    landmarks[15] = Landmark(x=1, y=3, z=0, visibility=1.0)  # Straight again
-
+    # 3. Complete Rep - Extend arms again
+    set_pose(1, 0, 2, 0, hip_y=0)  # Straight again
     result = strategy.process(landmarks)
     assert result["reps"] == 1
-    assert result["state"] == "START"
+    assert result["state"] == "ECCENTRIC"  # Ready for next rep
+    assert "REP COMPLETE" in result["feedback"]["message"]
 
 
 def test_squat_strategy():

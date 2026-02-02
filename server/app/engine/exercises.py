@@ -85,50 +85,84 @@ class ExerciseStrategy(ABC):
 
 
 class PushupStrategy(ExerciseStrategy):
+    def __init__(self):
+        super().__init__()
+
     def process(self, landmarks: List[Landmark]) -> Dict:
         """
-        Pushup Logic:
-        - Monitors Elbow Angle (Left side default for now)
-        - Depth: < 90 deg
-        - Extension: > 160 deg
+        Pushup Logic (Multi-angle):
+        - Elbow Angle (11-13-15): Primary tracking for depth
+        - Hip Angle (11-23-25): Form check (relaxed threshold)
         """
         try:
-            # Left side
+            # Left side landmarks
             shoulder = landmarks[11]
             elbow = landmarks[13]
             wrist = landmarks[15]
+            hip = landmarks[23]
+            knee = landmarks[25]
 
-            angle = calculate_angle(shoulder, elbow, wrist)
+            # Calculate angles
+            elbow_angle = calculate_angle(shoulder, elbow, wrist)
+            hip_angle = calculate_angle(shoulder, hip, knee)
 
-            # Update State
+            # Hip form check (relaxed threshold - 140° instead of 160°)
+            hip_ok = hip_angle > 140
+
+            # State Machine
             if self.state == ExerciseState.START:
-                if angle > 160:
+                if elbow_angle > 160:
                     self.feedback = {"message": "GO DOWN", "color": "blue"}
                     self.state = ExerciseState.ECCENTRIC
+                else:
+                    self.feedback = {"message": "EXTEND ARMS", "color": "blue"}
 
             elif self.state == ExerciseState.ECCENTRIC:
-                if angle < 90:
+                if elbow_angle <= 90:
                     self.feedback = {
-                        "message": "GOOD DEPTH",
+                        "message": "GO UP",
                         "color": "green",
-                        "angle": angle,
+                        "angle": elbow_angle,
                     }
                     self.state = ExerciseState.CONCENTRIC
+                elif not hip_ok:
+                    self.feedback = {
+                        "message": "STRAIGHTEN BODY",
+                        "color": "yellow",
+                        "angle": hip_angle,
+                    }
                 else:
-                    self.feedback = {"message": "LOWER", "color": "red", "angle": angle}
+                    self.feedback = {
+                        "message": "LOWER",
+                        "color": "blue",
+                        "angle": elbow_angle,
+                    }
 
             elif self.state == ExerciseState.CONCENTRIC:
-                if angle > 160:
+                if elbow_angle > 160:
                     self.reps += 1
                     self.feedback = {"message": "REP COMPLETE", "color": "green"}
-                    self.state = ExerciseState.START
-                elif angle < 80:
-                    self.feedback = {"message": "UP UP UP", "color": "red"}
+                    self.state = (
+                        ExerciseState.ECCENTRIC
+                    )  # Ready for next rep immediately
+                elif not hip_ok:
+                    self.feedback = {
+                        "message": "STRAIGHTEN BODY",
+                        "color": "yellow",
+                        "angle": hip_angle,
+                    }
+                else:
+                    self.feedback = {
+                        "message": "PUSH UP",
+                        "color": "blue",
+                        "angle": elbow_angle,
+                    }
 
             return {
                 "reps": self.reps,
                 "state": self.state.name,
                 "feedback": self.feedback,
+                "debug": {"elbow": int(elbow_angle), "hip": int(hip_angle)},
             }
         except IndexError:
             return {"reps": self.reps, "feedback": {"message": "NO POSE"}}

@@ -87,82 +87,92 @@ class ExerciseStrategy(ABC):
 class PushupStrategy(ExerciseStrategy):
     def __init__(self):
         super().__init__()
+        self.direction = 0
+        self.form = 0
 
     def process(self, landmarks: List[Landmark]) -> Dict:
         """
-        Pushup Logic (Multi-angle):
-        - Elbow Angle (11-13-15): Primary tracking for depth
-        - Hip Angle (11-23-25): Form check (relaxed threshold)
+        Pushup Logic (Exact Replica of docs/pushup/PushUpCounter.py):
+        - Counts in 0.5 increments (Down=0.5, Up=0.5)
+        - Strict form checks using shoulder, elbow, and hip angles.
         """
         try:
-            # Left side landmarks
-            shoulder = landmarks[11]
-            elbow = landmarks[13]
-            wrist = landmarks[15]
-            hip = landmarks[23]
-            knee = landmarks[25]
+            # Landmarks
+            # 11: Left Shoulder, 13: Left Elbow, 15: Left Wrist
+            # 23: Left Hip, 25: Left Knee
 
-            # Calculate angles
-            elbow_angle = calculate_angle(shoulder, elbow, wrist)
-            hip_angle = calculate_angle(shoulder, hip, knee)
+            # Calculate angles matching the reference code:
+            # elbow: 11-13-15
+            # shoulder: 13-11-23
+            # hip: 11-23-25
 
-            # Hip form check (relaxed threshold - 140° instead of 160°)
-            hip_ok = hip_angle > 140
+            p11 = landmarks[11]
+            p13 = landmarks[13]
+            p15 = landmarks[15]
+            p23 = landmarks[23]
+            p25 = landmarks[25]
 
-            # State Machine
-            if self.state == ExerciseState.START:
-                if elbow_angle > 160:
-                    self.feedback = {"message": "GO DOWN", "color": "blue"}
-                    self.state = ExerciseState.ECCENTRIC
+            elbow = calculate_angle(p11, p13, p15)
+            shoulder = calculate_angle(p13, p11, p23)
+            hip = calculate_angle(p11, p23, p25)
+
+            feedback_msg = "Fix Form"
+            feedback_color = "yellow"
+
+            # 1. Check for starting form
+            if elbow > 160 and shoulder > 40 and hip > 160:
+                self.form = 1
+
+            if self.form == 1:
+                # 2. Check for "Up" phase (Eccentric/Concentric depending on perspective)
+                # The reference code says "Up" when elbow <= 90.
+                # Wait, looking at reference code:
+                # if elbow <= 90 and hip > 160: feedback="Up".
+                # IMPORTANT: In the reference code, "Up" is actually the DOWN position of a pushup (elbow bent).
+                # And "Down" is the UP position (arms extended).
+                # Reference:
+                # if elbow <= 90 ... feedback = "Up" ... count += 0.5 ... direction = 1
+                # if elbow > 160 ... feedback = "Down" ... count += 0.5 ... direction = 0
+
+                if elbow <= 90 and hip > 160:
+                    feedback_msg = "Up"  # Reference says "Up" for bottom position
+                    feedback_color = "green"
+                    if self.direction == 0:
+                        self.reps += 0.5
+                        self.direction = 1
+
+                elif elbow > 160 and shoulder > 40 and hip > 160:
+                    feedback_msg = "Down"  # Reference says "Down" for top position
+                    feedback_color = "blue"
+                    if self.direction == 1:
+                        self.reps += 0.5
+                        self.direction = 0
+
                 else:
-                    self.feedback = {"message": "EXTEND ARMS", "color": "blue"}
+                    feedback_msg = "Fix Form"
+                    feedback_color = "red"
 
-            elif self.state == ExerciseState.ECCENTRIC:
-                if elbow_angle <= 90:
-                    self.feedback = {
-                        "message": "GO UP",
-                        "color": "green",
-                        "angle": elbow_angle,
-                    }
-                    self.state = ExerciseState.CONCENTRIC
-                elif not hip_ok:
-                    self.feedback = {
-                        "message": "STRAIGHTEN BODY",
-                        "color": "yellow",
-                        "angle": hip_angle,
-                    }
-                else:
-                    self.feedback = {
-                        "message": "LOWER",
-                        "color": "blue",
-                        "angle": elbow_angle,
-                    }
+            # Map to inherited state for compatibility if needed,
+            # but mainly use the feedback message.
+            # We can map direction 1 (bottom) to CONCENTRIC?? No, let's stick to the reference feedback.
 
-            elif self.state == ExerciseState.CONCENTRIC:
-                if elbow_angle > 160:
-                    self.reps += 1
-                    self.feedback = {"message": "REP COMPLETE", "color": "green"}
-                    self.state = (
-                        ExerciseState.ECCENTRIC
-                    )  # Ready for next rep immediately
-                elif not hip_ok:
-                    self.feedback = {
-                        "message": "STRAIGHTEN BODY",
-                        "color": "yellow",
-                        "angle": hip_angle,
-                    }
-                else:
-                    self.feedback = {
-                        "message": "PUSH UP",
-                        "color": "blue",
-                        "angle": elbow_angle,
-                    }
+            self.feedback = {
+                "message": feedback_msg,
+                "color": feedback_color,
+                "angle": elbow,  # Returning elbow angle for progress bar
+            }
 
             return {
-                "reps": self.reps,
-                "state": self.state.name,
+                "reps": self.reps,  # This will be 0.5, 1.0, 1.5 etc.
+                "state": "ACTIVE" if self.form == 1 else "START",
                 "feedback": self.feedback,
-                "debug": {"elbow": int(elbow_angle), "hip": int(hip_angle)},
+                "debug": {
+                    "elbow": int(elbow),
+                    "hip": int(hip),
+                    "shoulder": int(shoulder),
+                    "dir": self.direction,
+                    "form": self.form,
+                },
             }
         except IndexError:
             return {"reps": self.reps, "feedback": {"message": "NO POSE"}}

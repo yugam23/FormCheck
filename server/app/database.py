@@ -1,3 +1,30 @@
+"""
+database.py - SQLite persistence layer for FormCheck workout data.
+
+Handles storage and retrieval of workout sessions, user settings, and
+computed analytics (streaks, personal records, exercise distribution).
+
+Thread Safety:
+    Uses thread-local connections because SQLite connections cannot be
+    shared across threads. Each thread gets its own connection via
+    threading.local(). FastAPI runs request handlers in a thread pool,
+    so this approach prevents "SQLite objects used in a thread" errors.
+
+Tables:
+    sessions: Workout session records (exercise, reps, duration, timestamp)
+    settings: Key-value store for user preferences (e.g., weekly_goal)
+
+Streak Calculation:
+    Counts consecutive days with at least one session. A streak continues
+    if the last session was today or yesterday—this forgives single-day
+    gaps to reduce user anxiety about "breaking" streaks.
+
+Usage:
+    from app.database import db  # Global singleton
+    db.save_session("Pushups", 25, 120)
+    stats = db.get_stats()
+"""
+
 import sqlite3
 from typing import List, Dict, Optional
 import time
@@ -5,7 +32,35 @@ from pathlib import Path
 import threading
 from contextlib import contextmanager
 
+# Database file location - relative to server working directory
 DB_PATH = Path("formcheck.db")
+
+
+# Database Schema:
+#
+# TABLE: sessions
+# ┌─────────────┬──────────┬─────────────────────────────┐
+# │ Column      │ Type     │ Description                 │
+# ├─────────────┼──────────┼─────────────────────────────┤
+# │ id          │ INTEGER  │ Primary key (autoincrement) │
+# │ exercise    │ TEXT     │ Exercise name (Pushups, etc)│
+# │ reps        │ INTEGER  │ Total reps or seconds       │
+# │ duration    │ INTEGER  │ Session length in seconds   │
+# │ timestamp   │ REAL     │ Unix timestamp (float)      │
+# └─────────────┴──────────┴─────────────────────────────┘
+#
+# TABLE: settings
+# ┌─────────┬──────┬───────────────────────────────┐
+# │ Column  │ Type │ Description                   │
+# ├─────────┼──────┼───────────────────────────────┤
+# │ key     │ TEXT │ Setting name (primary key)    │
+# │ value   │ TEXT │ Setting value (JSON serialized)│
+# └─────────┴──────┴───────────────────────────────┘
+#
+# Example Queries:
+#   - Get last 10 sessions: SELECT * FROM sessions ORDER BY timestamp DESC LIMIT 10
+#   - Calculate streak: SELECT DISTINCT date(timestamp, 'unixepoch', 'localtime') ...
+#   - Get PRs: SELECT exercise, MAX(reps) FROM sessions GROUP BY exercise
 
 
 class Database:
@@ -116,6 +171,23 @@ class Database:
                 "SELECT DISTINCT date(timestamp, 'unixepoch', 'localtime') as day FROM sessions ORDER BY day DESC"
             )
             dates = [row[0] for row in cursor.fetchall()]
+
+            # Streak Calculation Edge Cases:
+            #
+            # Case 1: User works out today at 11 PM, then tomorrow at 1 AM
+            #   ✅ Counts as 2-day streak (uses date(), not 24-hour window)
+            #
+            # Case 2: User works out Monday, skips Tuesday, works out Wednesday
+            #   ❌ Streak resets to 1 (no forgiveness for multi-day gaps)
+            #
+            # Case 3: Last workout was yesterday
+            #   ✅ Streak continues (forgives single-day gap to reduce anxiety)
+            #
+            # Case 4: Timezone changes (user travels)
+            #   ⚠️  Uses localtime from timestamp—may cause streak breaks on travel
+            #
+            # Case 5: Multiple workouts in same day
+            #   ✅ Counted as 1 day (DISTINCT date() in query)
 
             streak = 0
             if dates:

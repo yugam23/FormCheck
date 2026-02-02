@@ -1,8 +1,64 @@
+"""
+exercises.py - Exercise-specific rep counting and form feedback logic.
+
+Implements the Strategy Pattern: each exercise type (Pushups, Squats, Plank)
+has its own strategy class with custom state machine logic for counting reps
+and providing real-time form feedback.
+
+State Machine (for rep-based exercises):
+    START -> ECCENTRIC (going down) -> CONCENTRIC (going up) -> START (rep complete)
+
+Each strategy monitors specific joint angles:
+    - Pushups: Elbow angle (shoulder-elbow-wrist)
+    - Squats: Knee angle (hip-knee-ankle)
+    - Plank: Body alignment (shoulder-hip-ankle)
+
+Form Thresholds:
+    These are calibrated angles that distinguish good form from bad:
+    - Pushup depth: <90° elbow angle (proper depth)
+    - Squat depth: <90° knee angle (parallel or below)
+    - Plank form: 160-200° alignment (straight body)
+
+Adding New Exercises:
+    1. Create a new class extending ExerciseStrategy
+    2. Implement process() with landmark indices and angle thresholds
+    3. Add to EXERCISE_MAP dictionary
+
+Landmark Indices (MediaPipe pose):
+    11: Left shoulder, 13: Left elbow, 15: Left wrist
+    23: Left hip, 25: Left knee, 27: Left ankle
+    See: https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker
+"""
+
 from abc import ABC, abstractmethod
 from enum import Enum, auto
 from typing import List, Dict, Optional
 from app.schemas import Landmark
 from app.core.geometry import calculate_angle
+
+
+# State Machine Diagram:
+#
+#     ┌─────────┐
+#     │  START  │◄──────────────────┐
+#     └────┬────┘                   │
+#          │ angle > 160°           │
+#          ▼                        │
+#     ┌──────────┐                  │
+#     │ ECCENTRIC│ (going down)     │
+#     └────┬─────┘                  │
+#          │ angle < 90°            │
+#          ▼                        │
+#     ┌──────────┐                  │
+#     │CONCENTRIC│ (going up)       │
+#     └────┬─────┘                  │
+#          │ angle > 160°           │
+#          └────────────────────────┘
+#              (rep complete)
+#
+# Pushups: monitors elbow angle (shoulder-elbow-wrist)
+# Squats:  monitors knee angle (hip-knee-ankle)
+# Plank:   monitors body alignment (shoulder-hip-ankle)
 
 
 class ExerciseState(Enum):
@@ -176,3 +232,28 @@ EXERCISE_MAP = {
 
 def get_strategy(name: str) -> ExerciseStrategy:
     return EXERCISE_MAP.get(name, PushupStrategy)()
+
+
+# MediaPipe Pose Landmark Indices (33 total):
+#
+#        11 ●────●──────● 12  (shoulders)
+#          /      \
+#      13 ●        ● 14       (elbows)
+#          \      /
+#      15 ●────●──────● 16    (wrists)
+#             |
+#      23 ●───┴───● 24        (hips)
+#             |
+#      25 ●───┴───● 26        (knees)
+#             |
+#      27 ●───┴───● 28        (ankles)
+#
+# Full index reference: https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker
+#
+# Common Indices:
+#   11, 12: Left/Right Shoulder
+#   13, 14: Left/Right Elbow
+#   15, 16: Left/Right Wrist
+#   23, 24: Left/Right Hip
+#   25, 26: Left/Right Knee
+#   27, 28: Left/Right Ankle

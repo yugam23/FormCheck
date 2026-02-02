@@ -75,3 +75,32 @@ _Client runs on `http://localhost:5173`_
 ## 🤝 Contributing
 
 Project designed as a technical showcase. Pull requests welcome.
+
+### Commit Message Format
+
+We follow Conventional Commits:
+
+```
+<type>(<scope>): <subject>
+
+<body>
+```
+
+**Types:**
+
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation only
+- `style`: Code style (formatting, no logic change)
+- `refactor`: Code restructuring (no behavior change)
+- `perf`: Performance improvement
+- `test`: Adding/updating tests
+
+**Examples:**
+
+```
+feat(exercises): add bicep curl detection
+fix(database): resolve streak calculation timezone bug
+docs(api): update WebSocket protocol specification
+perf(pose): optimize landmark serialization (20% faster)
+```

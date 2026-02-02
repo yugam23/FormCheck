@@ -1,3 +1,13 @@
+// formatters.ts
+//
+// Display formatting utilities for workout data.
+//
+// Handles the different metric types across exercises:
+//   - Rep-based exercises (Pushups, Squats): Display as count
+//   - Time-based exercises (Plank): Display as MM:SS duration
+//
+// All formatters are pure functions—no side effects, safe to use anywhere.
+
 /**
  * Formats seconds into MM:SS string.
  *

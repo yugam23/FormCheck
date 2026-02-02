@@ -1,3 +1,15 @@
+// utils.ts
+//
+// General utility functions for the FormCheck client.
+//
+// cn() - Tailwind CSS class merging utility:
+//   Combines clsx (conditional class joining) with tailwind-merge
+//   (conflict resolution). Essential for component APIs that accept
+//   className props—prevents duplicate/conflicting Tailwind classes.
+//
+// Example conflict resolution:
+//   cn('px-4', 'px-6') -> 'px-6' (not 'px-4 px-6')
+
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 

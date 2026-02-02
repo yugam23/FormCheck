@@ -1,3 +1,20 @@
+// App.tsx
+//
+// Root application shell with routing and global providers.
+//
+// Structure:
+//   ErrorBoundary -> ToastProvider -> BrowserRouter -> Routes
+//
+// Lazy Loading Strategy:
+//   All page components (HomeView, WorkoutView, Dashboard) are lazy-loaded
+//   to reduce initial bundle size. Users see LoadingFallback during chunk
+//   fetch. This improves Time-to-Interactive for first-time visitors.
+//
+// Route Layout:
+//   All routes share MainLayout which provides the sidebar navigation.
+//   - /          : Exercise selection (HomeView)
+//   - /workout   : Active workout with webcam (WorkoutView)
+//   - /dashboard : Stats, history, and analytics (Dashboard)
 
 import { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';

@@ -1,3 +1,38 @@
+// errorHandler.ts
+//
+// API response handling and custom error types.
+//
+// Provides a consistent pattern for handling fetch responses:
+// - Non-2xx responses throw ApiError with status details
+// - Empty responses (204 No Content) return empty object
+// - Successful responses are parsed as JSON
+//
+// Design Decision:
+//   Using a custom ApiError class instead of generic Error allows
+//   callers to access HTTP status codes for specific error handling
+//   (e.g., 401 -> redirect to login, 404 -> show "not found" UI).
+
+// Error Hierarchy:
+//   ApiError (custom class)
+//     ├─ NetworkError (fetch failed, no response)
+//     ├─ ValidationError (400 Bad Request)
+//     ├─ AuthError (401/403)
+//     └─ ServerError (500+)
+//
+// Usage Pattern:
+//   try {
+//     const data = await handleApiResponse(response);
+//   } catch (err) {
+//     if (err instanceof ApiError) {
+//       toast.error(err.message);  // User-friendly message
+//       console.error(err.details); // Technical details for debugging
+//     }
+//   }
+//
+// Integration:
+//   - Used by useFetch hook for GET requests
+//   - Used directly in WorkoutView for POST /api/save-session
+//   - Error messages shown via Toast component (UI layer)
 
 /**
  * Custom error class for API response errors.

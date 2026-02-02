@@ -1,3 +1,35 @@
+"""
+main.py - FormCheck FastAPI Backend Server
+
+Real-time pose analysis server for exercise form feedback. Provides:
+1. WebSocket endpoint (/ws) for streaming pose detection at 15 FPS
+2. REST API endpoints for session history, stats, and analytics
+
+Architecture:
+- WebSocket connections maintain per-client exercise strategies (Strategy pattern)
+- Pose detection via MediaPipe runs server-side to offload compute from browser
+- Sessions auto-save on disconnect if reps > 0
+
+Key Dependencies:
+- PoseDetector: Wraps MediaPipe for landmark extraction
+- ConnectionManager: Tracks active WebSocket connections
+- ExerciseStrategy: Per-exercise rep counting and feedback logic
+- Database: SQLite persistence for sessions and settings
+
+Rate Limits:
+- Health/sessions: 60/min per IP
+- Analytics: 30/min per IP (more expensive query)
+- WebSocket: Max 20 concurrent connections globally
+
+Environment:
+- ALLOWED_ORIGINS: Comma-separated origins for CORS
+- SENTRY_DSN: Optional error tracking
+- ENVIRONMENT: 'development' allows all origins
+
+Usage:
+    uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+"""
+
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 import json
@@ -10,6 +42,13 @@ from app.core.pose_detector import PoseDetector
 from app.core.connection_manager import ConnectionManager
 from app.engine.exercises import get_strategy
 from app.database import db
+
+# Error Handling Strategy:
+#   - Rate Limiting: SlowAPI with 100 req/min default, 200 for trusted IPs
+#   - Validation: Pydantic schemas auto-validate request bodies
+#   - WebSocket Errors: Caught and logged, client notified via error messages
+#   - Database Errors: Thread-local connections prevent cross-thread issues
+#   - Graceful Degradation: Failed pose detection returns NO_DETECTION type
 
 # Security & Validation
 from pydantic import BaseModel
@@ -29,7 +68,7 @@ if SENTRY_DSN:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
         traces_sample_rate=1.0,  # Capture 100% of transactions for performance monitoring
-        profiles_sample_rate=1.0, # Capture 100% for profiling
+        profiles_sample_rate=1.0,  # Capture 100% for profiling
     )
 
 # Configure Structured Logging

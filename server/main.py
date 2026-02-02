@@ -18,9 +18,19 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 import structlog
+import sentry_sdk
 
 # Load environment variables
 load_dotenv()
+
+# Sentry Init
+SENTRY_DSN = os.getenv("SENTRY_DSN")
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        traces_sample_rate=1.0,  # Capture 100% of transactions for performance monitoring
+        profiles_sample_rate=1.0, # Capture 100% for profiling
+    )
 
 # Configure Structured Logging
 structlog.configure(

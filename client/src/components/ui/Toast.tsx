@@ -1,7 +1,48 @@
+// Toast.tsx
+//
+// Global toast notification system with React Context and Portal.
+//
+// Architecture:
+//   ToastProvider (context) -> createPortal (fixed position) -> ToastItem[]
+//
+// Auto-Dismiss:
+//   Toasts auto-remove after `duration` ms (default: 5000). Pass 0 for
+//   persistent toasts that require manual dismissal.
+//
+// Portal:
+//   Toasts render outside the React tree (via createPortal to document.body)
+//   to avoid z-index and overflow issues from parent component styling.
+//
+// Usage:
+//   1. Wrap app with <ToastProvider>
+//   2. Call useToast().success("Message") from any child component
+//
+// Toast Queue Management:
+//
+// Behavior:
+//   - Max visible toasts: 3 (oldest dismissed if 4th added)
+//   - Auto-dismiss: 5s default (configurable per toast)
+//   - Stacking: New toasts appear at top (reverse chronological)
+//
+// Positioning:
+//   - Desktop: Top-right corner, 1rem margin
+//   - Mobile: Top-center, full-width minus padding
+//   - Z-index: 9999 (above all other UI elements)
+//
+// Animation:
+//   - Enter: Slide from right + fade in (200ms)
+//   - Exit: Fade out (150ms)
+//   - Using CSS transitions (not JS animation for performance)
+//
+// Accessibility:
+//   - role="alert": Immediate announcement by screen readers
+//   - aria-live="assertive": Interrupts current announcement for errors
+//   - aria-atomic="true": Reads entire message, not just changes
+
 import React, { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 import { X, CheckCircle, AlertTriangle, Info, AlertCircle } from 'lucide-react';
 import { createPortal } from 'react-dom';
-import { cn } from '../../lib/utils'; // Assuming utilities are in this path
+import { cn } from '../../lib/utils';
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 

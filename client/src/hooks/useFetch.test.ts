@@ -1,3 +1,24 @@
+// Testing Strategy:
+//
+// Framework: Vitest (fast, Vite-native)
+// Testing Library: @testing-library/react (user-centric tests)
+//
+// Test Types:
+//   1. Unit Tests: Hooks, utilities, pure functions
+//   2. Component Tests: UI behavior, user interactions
+//   3. Integration Tests: API mocking, data flows
+//   (No E2E tests currently—would use Playwright if needed)
+//
+// Coverage Goals:
+//   - Critical paths: 90%+ (useFetch, errorHandler, exercises.py)
+//   - UI components: 70%+ (focus on user-facing bugs)
+//   - Utils/formatters: 100% (pure functions, easy to test)
+//
+// Mock Strategy:
+//   - API calls: MSW (Mock Service Worker)
+//   - WebSocket: Manual mock in test setup
+//   - MediaPipe: Not mocked (too complex, skip in tests)
+
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { useFetch } from './useFetch';

@@ -1,3 +1,15 @@
+// LoadingFallback.tsx
+//
+// Full-screen loading indicator for lazy-loaded route transitions.
+//
+// Used as the Suspense fallback in App.tsx when lazily-loaded pages
+// (HomeView, WorkoutView, Dashboard) are still being fetched.
+//
+// Visual Design:
+//   - Centered pulsing icon with glow effect
+//   - Matches app's glassmorphism aesthetic
+//   - Provides visual continuity during navigation
+
 import { Activity } from 'lucide-react';
 
 /**

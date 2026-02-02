@@ -1,3 +1,14 @@
+// HomeView.tsx
+//
+// Landing page and exercise selection screen.
+//
+// This is the main entry point for users. It showcases the app's value
+// proposition with a hero section and provides the exercise picker grid
+// where users can start a specific workout type.
+//
+// Navigation:
+//   Clicking an exercise card navigates to /workout with the exercise
+//   name passed via router state (location.state.exercise).
 
 import { Play, ArrowRight, Activity, Zap, Trophy } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';

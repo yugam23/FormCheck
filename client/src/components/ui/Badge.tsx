@@ -1,3 +1,16 @@
+// Badge.tsx
+//
+// Small label component for status indicators and tags.
+//
+// Variants:
+//   - default: Primary color background
+//   - secondary: Muted background
+//   - outline: Border only, no fill
+//   - destructive: Red/danger color
+//   - success: Green/success color
+//
+// Common uses: exercise type tags, status indicators, level badges
+
 import React from 'react';
 import { cn } from '../../lib/utils';
 

@@ -1,3 +1,20 @@
+// MainLayout.tsx
+//
+// Root layout wrapper providing consistent navigation and visual chrome.
+//
+// Features:
+//   - Fixed navigation bar with route highlighting
+//   - Ambient background glow effects (purely decorative)
+//   - Route prefetching on hover for faster navigation
+//
+// Route Outlet:
+//   Child routes (HomeView, WorkoutView, Dashboard) render in the <Outlet>
+//   component. This layout persists across route transitions.
+//
+// Prefetching Strategy:
+//   Navigation links trigger dynamic imports on mouse enter, so the chunk
+//   for that route downloads before the user actually clicks.
+
 import { Activity } from 'lucide-react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';

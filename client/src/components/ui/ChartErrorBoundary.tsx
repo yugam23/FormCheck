@@ -1,3 +1,19 @@
+// ChartErrorBoundary.tsx
+//
+// Specialized error boundary for Recharts components.
+//
+// Why a Separate Boundary:
+//   Recharts can throw during render if data is malformed or during
+//   ResponsiveContainer resizing edge cases. This boundary isolates
+//   chart failures so the rest of the dashboard remains functional.
+//
+// Fallback:
+//   Shows a compact error message within the chart's allocated space
+//   rather than crashing the entire dashboard.
+//
+// See Also:
+//   - ErrorBoundary.tsx: Full-page error boundary for app-level crashes
+
 import { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle } from 'lucide-react';

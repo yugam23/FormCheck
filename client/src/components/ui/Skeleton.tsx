@@ -1,3 +1,19 @@
+// Skeleton.tsx
+//
+// Loading placeholder components for dashboard content.
+//
+// Purpose:
+//   Provide visual feedback during data loading. Skeleton components
+//   mimic the shape of the content they replace, reducing layout shift.
+//
+// Exports:
+//   - Skeleton: Basic animated placeholder (any size via className)
+//   - StatsSkeleton: Placeholder for StatsCards component
+//   - ChartSkeleton: Placeholder for ActivityChart with bar visualization
+//
+// Animation:
+//   Uses Tailwind's animate-pulse for subtle pulsing effect.
+
 import { cn } from '../../lib/utils';
 import React from 'react';
 

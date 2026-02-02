@@ -1,3 +1,19 @@
+// Button.tsx
+//
+// Reusable button component with variants, sizes, and loading state.
+//
+// Variants:
+//   - primary: Main CTA button (green gradient)
+//   - secondary: Alternative action (glass effect)
+//   - danger: Destructive actions (red)
+//   - ghost: Minimal/icon button (transparent)
+//
+// Loading:
+//   When loading=true, shows spinner and disables interactions.
+//   Useful for async button actions (form submit, API calls).
+//
+// Integrates with btn-primary/btn-secondary CSS classes from index.css.
+
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 import { cn } from '../../lib/utils';

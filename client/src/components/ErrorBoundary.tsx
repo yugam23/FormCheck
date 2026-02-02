@@ -1,3 +1,21 @@
+// ErrorBoundary.tsx
+//
+// React error boundary for graceful failure handling.
+//
+// Why a Class Component:
+//   React's error boundary API (getDerivedStateFromError, componentDidCatch)
+//   is only available in class components. This is a limitation of React,
+//   not a design choice—there's no hook equivalent as of React 18.
+//
+// Usage:
+//   Wrap any component tree that might throw. The boundary catches errors
+//   during render, in lifecycle methods, and in constructors of child components.
+//   It does NOT catch: event handlers, async code, SSR, or errors in the boundary itself.
+//
+// Recovery:
+//   Default fallback shows error message with reload button. Custom fallback
+//   can be provided via the `fallback` prop for context-specific recovery.
+
 import React from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 

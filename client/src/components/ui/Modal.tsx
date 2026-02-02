@@ -1,3 +1,20 @@
+// Modal.tsx
+//
+// Accessible modal dialog component with portal rendering.
+//
+// Features:
+//   - Portal: Renders to document.body to avoid z-index/overflow issues
+//   - Escape key: Closes modal when pressed
+//   - Backdrop click: Closes modal when clicking outside content
+//   - Scroll lock: Prevents background scrolling while open
+//
+// Accessibility:
+//   - role="dialog" and aria-modal="true" for screen readers
+//   - Close button with aria-label
+//
+// Sizes:
+//   maxWidth prop controls content width (sm, md, lg, xl, 2xl, full)
+
 import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '../../lib/utils';

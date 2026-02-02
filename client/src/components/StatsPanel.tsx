@@ -1,3 +1,22 @@
+// StatsPanel.tsx
+//
+// Real-time workout metrics display (HUD) shown during active exercise.
+//
+// Displays:
+//   - Rep Count (or Hold Time for Plank)
+//   - Form Quality Score (0-100, color-coded)
+//   - Session Duration (MM:SS timer)
+//   - Current AI Feedback message
+//
+// Layout:
+//   On mobile: Horizontal 3-column grid
+//   On desktop: Vertical stacked cards (sidebar orientation)
+//
+// Color Coding:
+//   - Quality 90+: Green
+//   - Quality 70-89: Yellow
+//   - Quality <70: Red
+
 import { Timer, Activity, Zap } from 'lucide-react';
 import { cn } from '../lib/utils';
 import type { RepData, FeedbackData } from '../types';
